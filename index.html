@@ -3,61 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Góc Ảnh Phong Cảnh của Thọ Lo</title>
+    <title>Mạng Xã Hội Phong Cảnh</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        img { width: 100%; border-radius: 8px; }
-        .actions { margin: 15px 0; display: flex; justify-content: space-around; }
-        button { padding: 10px 20px; border: none; background: #0084ff; color: white; border-radius: 5px; cursor: pointer; }
-        button.liked { background: #fb3958; }
-        .comment-section { text-align: left; margin-top: 20px; }
-        input { width: 75%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        ul { list-style: none; padding: 0; }
-        li { background: #eee; padding: 8px; margin: 5px 0; border-radius: 4px; }
+        :root { --primary: #0084ff; --danger: #fb3958; --success: #28a745; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .hidden { display: none !important; }
+        
+        /* Màn hình đăng nhập & 16+ */
+        .auth-card { text-align: center; padding: 4px 0; }
+        .btn-google { background: #4285F4; color: white; padding: 12px 24px; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .age-checkbox { margin: 20px 0; font-size: 14px; color: #555; }
+        
+        /* Hồ sơ người dùng */
+        .profile-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; position: relative; }
+        .profile-stats { display: flex; gap: 15px; font-size: 14px; margin-top: 8px; color: #666; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer; }
+        
+        /* Cài đặt Hồ sơ */
+        .settings-panel { background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .input-group { margin-bottom: 10px; text-align: left; }
+        .input-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+        .input-group input[type="text"] { width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        /* Bài đăng / Ảnh */
+        .post-card { border: 1px solid #e1e4e6; border-radius: 8px; padding: 15px; margin-top: 20px; text-align: left; }
+        .post-img { width: 100%; border-radius: 8px; max-height: 400px; object-fit: cover; }
+        .cre-tag { background: #e4e6eb; padding: 4px 8px; font-size: 12px; border-radius: 4px; display: inline-block; margin-top: 5px; font-style: italic; }
+        
+        /* Trích dẫn & Tương tác */
+        .quote-box { background: #f0f2f5; border-left: 4px solid var(--primary); padding: 10px; margin: 10px 0; border-radius: 0 4px 4px 0; font-size: 14px; }
+        .actions-bar { display: flex; gap: 15px; margin: 15px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 10px 0; }
+        .action-btn { background: none; border: none; color: #65676b; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .action-btn.active { color: var(--danger); }
+        .action-btn.follow-active { color: var(--primary); }
+        
+        /* Bình luận */
+        .comment-box { display: flex; gap: 8px; margin-bottom: 15px; }
+        .comment-box input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 20px; }
+        .comment-box button { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
+        .comment-list { list-style: none; padding: 0; margin: 0; }
+        .comment-item { background: #f0f2f5; padding: 8px 12px; border-radius: 15px; margin-bottom: 8px; font-size: 14px; }
+        .comment-user { font-weight: bold; margin-right: 5px; color: #050505; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Ảnh Phong Cảnh Đẹp</h2>
-        <!-- Tạm thời dùng một ảnh mẫu trên mạng, sau này bạn đổi sau -->
-        <img src="https://picsum.photos/500/300" alt="Phong canh">
-        
-        <div class="actions">
-            <button id="likeBtn">❤️ Thả tim (<span id="likeCount">0</span>)</button>
+        <!-- 1. MÀN HÌNH ĐĂNG NHẬP / XÁC THỰC TUỔI -->
+        <div id="authScreen" class="auth-card">
+            <h2>Chào mừng tới Mạng Xã Hội Phong Cảnh</h2>
+            <p>Vui lòng xác nhận độ tuổi và đăng nhập để tiếp tục</p>
+            <div class="age-checkbox">
+                <input type="checkbox" id="ageCheck">
+                <label id="ageLabel" for="ageCheck" style="font-weight: bold;">Tôi xác nhận tôi đã trên 16 tuổi 🔞</label>
+            </div>
+            <button id="loginBtn" class="btn-google" disabled>Đăng nhập bằng Google</button>
         </div>
 
-        <div class="comment-section">
-            <h4>Bình luận</h4>
-            <input type="text" id="commentInput" placeholder="Nhập bình luận của bạn...">
-            <button id="sendBtn">Gửi</button>
-            <ul id="commentList"></ul>
+        <!-- 2. GIAO DIỆN CHÍNH (CHỈ HIỆN SAU KHI LOG IN) -->
+        <div id="mainScreen" class="hidden">
+            <!-- Khu vực Hồ sơ cá nhân -->
+            <div class="profile-box">
+                <button id="logoutBtn" class="btn-sm" style="position: absolute; right: 15px; top: 15px; background: #fbfbfb;">Đăng xuất</button>
+                <h3 style="margin: 0;" id="profName">Đang tải...</h3>
+                <span style="color:#888; font-size: 13px;" id="profId">@id_u_user</span>
+                
+                <div class="profile-stats">
+                    <span>❤️ Tổng Like công khai: <b id="profLikes">0</b></span>
+                    <span id="statFollowersBox">👥 Người theo dõi: <b id="profFollowers">0</b></span>
+                    <span id="statFollowingBox">👣 Đang theo dõi: <b id="profFollowing">0</b></span>
+                </div>
+                <button id="toggleSettingsBtn" class="btn-sm" style="margin-top:10px;">Chỉnh sửa hồ sơ / Cài đặt</button>
+            </div>
+
+            <!-- Khung chỉnh sửa Hồ sơ & Cài đặt riêng tư -->
+            <div id="settingsPanel" class="settings-panel hidden">
+                <h4>Cài đặt tài khoản</h4>
+                <div class="input-group">
+                    <label>Tên hiển thị (Đổi 7 ngày/lần):</label>
+                    <input type="text" id="editNameInput">
+                    <small id="nameCooldown" style="color:red; font-size:11px;"></small>
+                </div>
+                <div class="input-group">
+                    <label>User ID độc quyền (Đổi 60 ngày/lần):</label>
+                    <input type="text" id="editIdInput" placeholder="Ví dụ: tholo_deptrai">
+                    <small id="idCooldown" style="color:red; font-size:11px;"></small>
+                </div>
+                <div class="input-group" style="flex-direction: row; display: flex; align-items: center; gap: 8px; margin: 15px 0;">
+                    <input type="checkbox" id="privateFollowCheck">
+                    <label for="privateFollowCheck" style="margin: 0; cursor:pointer;">Đặt danh sách Theo dõi thành RIÊNG TƯ 🔒</label>
+                </div>
+                <button id="saveProfileBtn" class="btn-google" style="padding: 6px 15px; font-size:13px; border-radius:5px;">Lưu Cài Đặt</button>
+            </div>
+
+            <!-- Bài đăng mẫu chứa ảnh phong cảnh -->
+            <div class="post-card">
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div>
+                        <strong style="font-size:15px;">🌟 Tác phẩm: Hoàng Hôn Tĩnh Lặng</strong><br>
+                        <span style="font-size:12px; color:#666;">Đăng bởi: Admin_ThoLo</span>
+                    </div>
+                    <!-- Nút follow chủ bài đăng -->
+                    <button id="followAuthorBtn" class="btn-sm">Theo dõi</button>
+                </div>
+
+                <!-- Quy định bắt buộc ghi nguồn (Cre) -->
+                <img src="https://picsum.photos/id/10/600/400" alt="Phong cảnh" class="post-img">
+                <div><span class="cre-tag">⚠️ Cre: Unsplash / Quy định bắt buộc ghi nguồn nền tảng khác</span></div>
+
+                <!-- Vùng hiển thị trích dẫn (nếu có) -->
+                <div id="quoteDisplayArea" class="hidden">
+                    <div class="quote-box">
+                        <b>Trích dẫn từ bạn:</b>
+                        <p id="quoteTextContent" style="margin:5px 0 0 0; font-style: italic; color:#555;"></p>
+                    </div>
+                </div>
+
+                <!-- Thanh tương tác -->
+                <div class="actions-bar">
+                    <button id="likeActionBtn" class="action-btn">❤️ Thích (<span id="likeText">0</span>)</button>
+                    <button id="quoteActionBtn" class="action-btn" style="color:#28a745;">️📝 Trích dẫn chữ</button>
+                </div>
+
+                <!-- Phần bình luận -->
+                <div class="comment-section">
+                    <h5>Bình luận từ cộng đồng</h5>
+                    <div class="comment-box">
+                        <input type="text" id="commentTextInput" placeholder="Viết bình luận công khai...">
+                        <button id="submitCommentBtn">Gửi</button>
+                    </div>
+                    <ul id="commentDisplayList" class="comment-list"></ul>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Đoạn này sau này chúng ta sẽ nhét code Firebase vào đây -->
-    <script>
-        // Tạm thời làm hiệu ứng giả lập trên máy, F5 sẽ mất
-        let likes = 0;
-        const likeBtn = document.getElementById('likeBtn');
-        const likeCount = document.getElementById('likeCount');
+    <!-- Tích hợp các thư viện Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, push, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // =================================================================
+        // 👇👇👇 CHỖ NHẬP FIREBASE CỦA BẠN Ở NGAY DƯỚI NÀY 👇👇👇
+        // Bạn dán đống mã cấu hình sao chép từ Firebase của bạn vào đây nhé
+        // =================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDNwZkMqDeOeuJofizFeNY6_uKRzUxdmSE",
+            authDomain: "phong-canh-tho-lo.firebaseapp.com",
+            databaseURL: "https://phong-canh-tho-lo-default-rtdb.firebaseio.com",
+            projectId: "phong-canh-tho-lo",
+            storageBucket: "phong-canh-tho-lo.firebasestorage.app",
+            messagingSenderId: "839192988476",
+            appId: "1:839192988476:web:de981ade118f0cefe0ec39"
+        };
+        // =================================================================
+        // 👆👆👆 HẾT CHỖ NHẬP FIREBASE 👆👆👆
+        // =================================================================
+
+        // Khởi tạo các dịch vụ Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // Khai báo DOM Elements
+        const ageCheck = document.getElementById('ageCheck');
+        const loginBtn = document.getElementById('loginBtn');
+        const authScreen = document.getElementById('authScreen');
+        const mainScreen = document.getElementById('mainScreen');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const ageLabel = document.getElementById('ageLabel');
+
+        const profName = document.getElementById('profName');
+        const profId = document.getElementById('profId');
+        const profLikes = document.getElementById('profLikes');
+        const profFollowers = document.getElementById('profFollowers');
+        const profFollowing = document.getElementById('profFollowing');
+        const toggleSettingsBtn = document.getElementById('toggleSettingsBtn');
+        const settingsPanel = document.getElementById('settingsPanel');
         
-        likeBtn.addEventListener('click', () => {
-            likes++;
-            likeCount.innerText = likes;
-            likeBtn.classList.add('liked');
+        const editNameInput = document.getElementById('editNameInput');
+        const editIdInput = document.getElementById('editIdInput');
+        const privateFollowCheck = document.getElementById('privateFollowCheck');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const nameCooldown = document.getElementById('nameCooldown');
+        const idCooldown = document.getElementById('idCooldown');
+
+        const statFollowersBox = document.getElementById('statFollowersBox');
+        const statFollowingBox = document.getElementById('statFollowingBox');
+
+        // Khởi tạo các biến nội bộ người dùng
+        let currentUser = null;
+        let userDataGlobal = {};
+
+        // Kích hoạt nút đăng nhập nếu thỏa điều kiện tuổi tác (16+)
+        ageCheck.addEventListener('change', () => {
+            loginBtn.disabled = !ageCheck.checked;
+            ageLabel.style.color = ageCheck.checked ? "green" : "#555";
         });
 
-        document.getElementById('sendBtn').addEventListener('click', () => {
-            const input = document.getElementById('commentInput');
-            if(input.value.trim() !== "") {
-                const li = document.createElement('li');
-                li.innerText = input.value;
-                document.getElementById('commentList').appendChild(li);
-                input.value = "";
+        // Đăng nhập bằng tài khoản Google tài trợ
+        loginBtn.addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(error => alert("Đăng nhập thất bại: " + error.message));
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+        toggleSettingsBtn.addEventListener('click', () => settingsPanel.classList.toggle('hidden'));
+
+        // Kiểm tra trạng thái phiên làm việc Đăng nhập
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                authScreen.classList.add('hidden');
+                mainScreen.classList.remove('hidden');
+                khởi_Tạo_Hoặc_Tải_Hồ_Sơ(user);
+            } else {
+                currentUser = null;
+                authScreen.classList.remove('hidden');
+                mainScreen.classList.add('hidden');
             }
         });
-    </script>
-</body>
-</html>
+
+        // Hàm Đồng bộ / Lưu dữ liệu đăng ký/đăng nhập người dùng lên Database
+        function khởi_Tạo_Hoặc_Tải_Hồ_Sơ(user) {
+            const userRef = ref(db, 'users/' + user.uid);
+            onValue(userRef, (snapshot) => {
+                let data = snapshot.val();
+                if (!data) {
+                    // Nếu là tài khoản đăng ký mới lần đầu, khởi tạo thông tin mặc định
+                    data = {
+                        displayName: user.displayName || "Thành viên mới",
+                        customId: "user_" + user.uid.substring(0, 6),
+                        lastTimeChangeName: 0,
+                        lastTimeChangeId: 0,
+                        isPrivateFollow: false,
+                        totalLikes: 0,
+                        followersCount: 0,
+                        followingCount: 0
+                    };
+                    set(userRef, data);
+                }
+                userDataGlobal = data;
+                
+                // Cập nhật giao diện Hồ sơ cá nhân công khai
+                profName.innerText = data.displayName;
+                profId.innerText = "@" + data.customId;
+                profLikes.innerText = data.totalLikes || 0;
+                profFollowers.innerText = data.followersCount || 0;
+                profFollowing.innerText = data.followingCount || 0;
+
+                // Gán giá trị vào form cài đặt
+                editNameInput.value = data.displayName;
+                editIdInput.value = data.customId;
+                privateFollowCheck.checked = data.isPrivateFollow;
+
+                // Ẩn/Hiện số theo dõi dựa theo cài đặt Riêng tư
+                if(data.isPrivateFollow) {
+                    statFollowersBox.style.opacity = "0.5";
+                    statFollowingBox.style.opacity = "0.5";
+                } else {
+                    statFollowersBox.style.opacity = "1";
+                    statFollowingBox.style.opacity = "1";
+                }
+            });
+        }
+
+        // LƯU CÀI ĐẶT HỒ SƠ: Luật đổi tên 7 ngày, đổi ID 60 ngày
+        saveProfileBtn.addEventListener('click', () => {
+            if (!currentUser) return;
+            const now = Date.now();
+            const dayInMs = 24 * 60 * 60 * 1000;
+            
+            const newName = editNameInput.value.trim();
+            const newId = editIdInput.value.trim().replace(/\s+/g, ''); // Xóa khoảng trắng ID
+            const isPrivate = privateFollowCheck.checked;
+
+            let updates = {};
+            let canSave = true;
+
+            // Kiểm tra luật đổi tên (7 ngày = 7 * dayInMs)
+            if (newName !== userDataGlobal.displayName) {
+                if (userDataGlobal.lastTimeChangeName && (now - userDataGlobal.lastTimeChangeName < 7 * dayInMs)) {
+                    const daysLeft = Math.ceil((7 * dayInMs - (now - userDataGlobal.lastTimeChangeName)) / dayInMs);
+                    nameCooldown.innerText = `Cần đợi thêm ${daysLeft} ngày để đổi tên!`;
+                    canSave = false;
+                } else {
+                    updates['displayName'] = newName;
+                    updates['lastTimeChangeName'] = now;
+                    nameCooldown.innerText = "";
+                }
+            }
+
+            // Kiểm tra luật đổi ID (60 ngày = 60 * dayInMs)
+            if (newId !== userDataGlobal.customId) {
+                if (userDataGlobal.lastTimeChangeId && (now - userDataGlobal.lastTimeChangeId < 60 * dayInMs)) {
+                    const daysLeft = Math.ceil((60 * dayInMs - (now - userDataGlobal.lastTimeChangeId)) / dayInMs);
+                    idCooldown.innerText = `Cần đợi thêm ${daysLeft} ngày để đổi ID!`;
+                    canSave = false;
+                } else {
+                    updates['customId'] = newId;
+                    updates['lastTimeChangeId'] = now;
+                    idCooldown.innerText = "";
+                }
+            }
+
+            updates['isPrivateFollow'] = isPrivate;
+
+            if (canSave) {
+                const userRef = ref(db, 'users/' + currentUser.uid);
+                runTransaction(userRef, (currentData) => {
+                    if (currentData) {
+                        if (updates.displayName) currentData.displayName = updates.displayName;
+                        if (updates.lastTimeChangeName) currentData.lastTimeChangeName = updates.lastTimeChangeName;
+                        if (updates.customId) currentData.customId = updates.customId;
+                        if (updates.lastTimeChangeId) currentData.lastTimeChangeId = updates.lastTimeChangeId;
+                        currentData.isPrivateFollow = updates.isPrivateFollow;
+                    }
+                    return currentData;
+                }).then(() => {
+                    alert("Cập nhật cài đặt thành công!");
+                    settingsPanel.classList.add('hidden');
+                });
+            }
+        });
+
+        // TƯƠNG TÁC BÀI VIẾT MẪU (Thích, Bình Luận, Theo Dõi, Trích Dẫn)
+        const postLikesRef = ref(db, 'posts/sample_post/likes');
+        const postCommentsRef = ref(db, 'posts/sample_post/comments');
+        const postQuotesRef = ref(db, 'posts/sample_post/quotes');
+
+        // Thích bài viết
+        const likeActionBtn = document.getElementById('likeActionBtn');
+        const likeText = document.getElementById('likeText');
+        onValue(postLikesRef, (snapshot) => {
+            const count = snapshot.val() || 0;
+            likeText.innerText = count;
+        });
+        likeActionBtn.addEventListener('click', () => {
+            runTransaction(postLikesRef, (currentLikes) => (currentLikes || 0) + 1).then(() => {
+                likeActionBtn.classList.add('active');
+                // Tăng like công khai của chính chủ
+                if (currentUser) {
+                    runTransaction(ref(db, `users/${currentUser.uid}/totalLikes`), (c) => (c || 0) + 1);
+                }
+            });
+        });
+
+        // Theo dõi người khác (Follow)
+        const followAuthorBtn = document.getElementById('followAuthorBtn');
+        followAuthorBtn.addEventListener('click', () => {
+            if (!currentUser) return;
+            followAuthorBtn.innerText = "Đang theo dõi ✓";
+            followAuthorBtn.classList.add('follow-active');
+            // Tăng số người theo dõi trên DB
+            runTransaction(ref(db, `users/${currentUser.uid}/followersCount`), (c) => (c || 0) + 1);
+        });
+
+        // Trích dẫn chữ
+        const quoteActionBtn = document.getElementById('quoteActionBtn');
+        const quoteDisplayArea = document.getElementById('quoteDisplayArea');
+        const quoteTextContent = document.getElementById('quoteTextContent');
+        quoteActionBtn.addEventListener('click', () => {
+            const quotePrompt = prompt("Nhập nội dung trích dẫn cho bức ảnh này:");
+            if (quotePrompt !== null) {
+                quoteTextContent.innerText = quotePrompt === "" ? "Trích dẫn không kèm lời." : quotePrompt;
+                quoteDisplayArea.classList.remove('hidden');
+                push(postQuotes
