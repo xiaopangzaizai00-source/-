@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Góc Ảnh Phong Cảnh của Thọ Lo</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        img { width: 100%; border-radius: 8px; }
+        .actions { margin: 15px 0; display: flex; justify-content: space-around; }
+        button { padding: 10px 20px; border: none; background: #0084ff; color: white; border-radius: 5px; cursor: pointer; }
+        button.liked { background: #fb3958; }
+        .comment-section { text-align: left; margin-top: 20px; }
+        input { width: 75%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        ul { list-style: none; padding: 0; }
+        li { background: #eee; padding: 8px; margin: 5px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Ảnh Phong Cảnh Đẹp</h2>
+        <!-- Tạm thời dùng một ảnh mẫu trên mạng, sau này bạn đổi sau -->
+        <img src="https://picsum.photos/500/300" alt="Phong canh">
+        
+        <div class="actions">
+            <button id="likeBtn">❤️ Thả tim (<span id="likeCount">0</span>)</button>
+        </div>
+
+        <div class="comment-section">
+            <h4>Bình luận</h4>
+            <input type="text" id="commentInput" placeholder="Nhập bình luận của bạn...">
+            <button id="sendBtn">Gửi</button>
+            <ul id="commentList"></ul>
+        </div>
+    </div>
+
+    <!-- Đoạn này sau này chúng ta sẽ nhét code Firebase vào đây -->
+    <script>
+        // Tạm thời làm hiệu ứng giả lập trên máy, F5 sẽ mất
+        let likes = 0;
+        const likeBtn = document.getElementById('likeBtn');
+        const likeCount = document.getElementById('likeCount');
+        
+        likeBtn.addEventListener('click', () => {
+            likes++;
+            likeCount.innerText = likes;
+            likeBtn.classList.add('liked');
+        });
+
+        document.getElementById('sendBtn').addEventListener('click', () => {
+            const input = document.getElementById('commentInput');
+            if(input.value.trim() !== "") {
+                const li = document.createElement('li');
+                li.innerText = input.value;
+                document.getElementById('commentList').appendChild(li);
+                input.value = "";
+            }
+        });
+    </script>
+</body>
+</html>
