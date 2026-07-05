@@ -54,10 +54,10 @@
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-emerald-100 flex flex-col justify-between">
                 <div>
                     <h3 class="text-base font-semibold mb-3 text-stone-700 flex items-center gap-2">
-                        <i class="fa-solid fa-cloud-arrow-up text-emerald-500"></i>Đăng Ảnh Mới (Admin)
+                        <i class="fa-solid fa-link text-emerald-500"></i>Đăng Ảnh Bằng Link (Admin)
                     </h3>
                     <div class="space-y-3.5">
-                        <input type="file" id="input-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
+                        <input type="text" id="input-url" placeholder="Dán link ảnh (https://...jpg, png)" class="w-full text-sm border border-stone-200 rounded-xl p-2.5 focus:outline-emerald-500 bg-stone-50/50">
                         <div id="preview-container" class="hidden border border-dashed border-stone-200 rounded-xl p-2 text-center bg-stone-50">
                             <img id="img-preview" class="max-h-36 mx-auto rounded-lg object-contain shadow-sm">
                         </div>
@@ -65,7 +65,7 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <button id="btn-upload" class="w-full bg-emerald-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 shadow-sm transition">Tải Lên Kho Ảnh</button>
+                    <button id="btn-upload" class="w-full bg-emerald-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 shadow-sm transition">Đăng Lên Kho Ảnh</button>
                     <p id="upload-status" class="text-xs text-center font-medium mt-2 text-emerald-600 hidden"></p>
                 </div>
             </div>
@@ -121,30 +121,25 @@
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-        // Cấu hình Firebase chuẩn của sếp
         const firebaseConfig = {
             apiKey: "AIzaSyDNwZkMqDeOeuJofizFeNY6_uKRzUxdmSE",
             authDomain: "phong-canh-tho-lo.firebaseapp.com",
             databaseURL: "https://phong-canh-tho-lo-default-rtdb.firebaseio.com",
             projectId: "phong-canh-tho-lo",
-            storageBucket: "phong-canh-tho-lo.firebasestorage.app",
             messagingSenderId: "839192988476",
             appId: "1:839192988476:web:de981ade118f0cefe0ec39",
             measurementId: "G-C6R7JJZ6H9"
         };
 
-        // Khởi tạo các dịch vụ hệ thống
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getDatabase(app);
-        const storage = getStorage(app);
 
         let isAdmin = false;
 
-        // HIỆU ỨNG MÁY YẾU / MẠNH (PERFORMANCE TỐI ƯU)
+        // HIỆU ỨNG MÁY YẾU / MẠNH
         const btnFxToggle = document.getElementById('btn-fx-toggle');
         const fxIcon = document.getElementById('fx-icon');
         const fxText = document.getElementById('fx-text');
@@ -169,7 +164,7 @@
             return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
         }
 
-        // ĐĂNG NHẬP / KIỂM TRA TRẠNG THÁI ADMIN
+        // ĐĂNG NHẬP ADMIN
         const loginModal = document.getElementById('login-modal');
         document.getElementById('btn-login-trigger').addEventListener('click', () => loginModal.classList.remove('hidden'));
         document.getElementById('btn-close-login').addEventListener('click', () => loginModal.classList.add('hidden'));
@@ -203,46 +198,43 @@
             listenPhotos();
         });
 
-        document.getElementById('input-file').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                document.getElementById('img-preview').src = URL.createObjectURL(file);
+        // Live Preview link ảnh khi nhập vào ô
+        document.getElementById('input-url').addEventListener('input', (e) => {
+            const url = e.target.value.trim();
+            if (url.startsWith('http')) {
+                document.getElementById('img-preview').src = url;
                 document.getElementById('preview-container').classList.remove('hidden');
+            } else {
+                document.getElementById('preview-container').classList.add('hidden');
             }
         });
 
-        // XỬ LÝ TẢI ẢNH LÊN STORAGE & CẬP NHẬT DATABASE
+        // ĐĂNG ẢNH QUA ĐƯỜNG LINK THẲNG VÀO DATABASE
         document.getElementById('btn-upload').addEventListener('click', async () => {
-            const fileInput = document.getElementById('input-file');
+            const urlInput = document.getElementById('input-url');
             const captionInput = document.getElementById('input-caption');
             const status = document.getElementById('upload-status');
 
-            if (!fileInput.files[0]) return alert("Vui lòng chọn ảnh!");
+            const imgUrl = urlInput.value.trim();
+            if (!imgUrl) return alert("Vui lòng dán link ảnh vào!");
 
-            const file = fileInput.files[0];
             const caption = captionInput.value.trim() || "Cảm nhận vẻ đẹp thiên nhiên cùng Tho Lo Nature.";
-            const fileName = Date.now() + '_' + file.name;
             
-            status.innerText = "Đang tải ảnh thiên nhiên lên...";
+            status.innerText = "Đang lưu thông tin ảnh...";
             status.classList.remove('hidden');
 
             try {
-                const sRef = storageRef(storage, 'photos/' + fileName);
-                const snapshot = await uploadBytes(sRef, file);
-                const downloadURL = await getDownloadURL(snapshot.ref);
-
                 const photosRef = dbRef(db, 'photos');
                 const newPhotoRef = push(photosRef);
                 await set(newPhotoRef, {
-                    url: downloadURL,
+                    url: imgUrl,
                     caption: caption,
-                    storagePath: 'photos/' + fileName,
                     likes: 0,
                     createdAt: Date.now()
                 });
 
                 status.innerText = "Đăng ảnh thành công!";
-                fileInput.value = ""; captionInput.value = "";
+                urlInput.value = ""; captionInput.value = "";
                 document.getElementById('preview-container').classList.add('hidden');
                 setTimeout(() => status.classList.add('hidden'), 3000);
             } catch (error) {
@@ -250,7 +242,7 @@
             }
         });
 
-        // LẤY DỮ LIỆU VÀ ĐỔ RA LƯỚI ẢNH
+        // HIỂN THỊ LƯỚI ẢNH
         function listenPhotos() {
             const photosRef = dbRef(db, 'photos');
             onValue(photosRef, (snapshot) => {
@@ -263,7 +255,7 @@
                         <div class="text-center col-span-full py-12 text-stone-500 bg-white border border-stone-200 rounded-3xl shadow-sm px-4">
                             <i class="fa-solid fa-folder-open block text-3xl mb-3 text-emerald-500/70"></i>
                             <p class="font-semibold text-stone-700 text-sm">Kho ảnh thiên nhiên hiện đang trống!</p>
-                            <p class="text-xs text-stone-400 mt-1">Sếp hãy nhấn nút <b class="text-emerald-600">"Admin"</b> ở góc trên bên phải để đăng nhập quản trị và đăng bức ảnh đầu tiên lên mạng nhé!</p>
+                            <p class="text-xs text-stone-400 mt-1">Sếp hãy nhấn nút <b class="text-emerald-600">"Admin"</b> ở góc trên bên phải để đăng nhập quản trị và dán link bức ảnh đầu tiên lên mạng nhé!</p>
                         </div>`;
                     return;
                 }
@@ -276,12 +268,12 @@
                     const card = document.createElement('div');
                     card.className = "bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden flex flex-col justify-between relative hover-scale animate-fade-in";
                     
-                    let deleteBtn = isAdmin ? '<button data-id="' + photoId + '" data-path="' + (photoData.storagePath || '') + '" class="btn-delete-photo absolute top-3 right-3 bg-rose-600/90 text-white p-2 rounded-full hover:bg-rose-700 transition shadow-md"><i class="fa-solid fa-trash-can text-xs"></i></button>' : '';
+                    let deleteBtn = isAdmin ? '<button data-id="' + photoId + '" class="btn-delete-photo absolute top-3 right-3 bg-rose-600/90 text-white p-2 rounded-full hover:bg-rose-700 transition shadow-md"><i class="fa-solid fa-trash-can text-xs"></i></button>' : '';
 
                     card.innerHTML = `
                         <div>
                             <div class="relative overflow-hidden">
-                                <img src="${photoData.url}" class="w-full h-64 object-cover img-zoom" loading="lazy">
+                                <img src="${photoData.url}" class="w-full h-64 object-cover img-zoom" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1501854140801-50d01698950b?w=500'">
                                 ${deleteBtn}
                             </div>
                             <div class="p-4">
@@ -294,7 +286,7 @@
                                     </button>
                                     <a href="${photoData.url}" download target="_blank" class="text-stone-400 hover:text-emerald-600 transition flex items-center space-x-1.5">
                                         <i class="fa-solid fa-arrow-down-long text-base"></i>
-                                        <span class="text-xs font-bold text-stone-600">Tải về</span>
+                                        <span class="text-xs font-bold text-stone-600">Mở ảnh gốc</span>
                                     </a>
                                 </div>
                                 <div class="space-y-2 mb-2 max-h-36 overflow-y-auto pr-1" id="comments-${photoId}"></div>
@@ -309,5 +301,17 @@
                     listenApprovedComments(photoId);
                 });
 
-                // Xử lý sự kiện Xóa ảnh
-                document.querySelectorAll('.bt
+                // Xóa dữ liệu ảnh khỏi database
+                document.querySelectorAll('.btn-delete-photo').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        if (!confirm("Xóa bức ảnh này khỏi danh sách?")) return;
+                        const id = e.currentTarget.getAttribute('data-id');
+                        await remove(dbRef(db, 'photos/' + id));
+                    });
+                });
+
+                // Thả tim
+                document.querySelectorAll('.btn-like').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = e.currentTarget.getAttribute('data-id');
+                    
