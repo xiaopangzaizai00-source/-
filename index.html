@@ -7,11 +7,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
-
     <style>
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f5f5f4; }
@@ -87,11 +82,11 @@
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 border-b border-stone-200 pb-3 gap-2">
             <h2 class="text-lg font-bold text-stone-800 flex items-center"><i class="fa-solid fa-images mr-2 text-emerald-600"></i>Kho Ảnh Kỷ Niệm Thiên Nhiên</h2>
-            <span class="text-xs text-stone-400 font-medium"><i class="fa-solid fa-calendar-day mr-1"></i>Ngày khởi chạy website: 05/07/2026</span>
+            <span class="text-xs text-stone-400 font-medium"><i class="fa-solid fa-calendar-day mr-1"></i>Hệ thống vận hành: GitHub v2026</span>
         </div>
 
         <div id="photo-gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="text-center col-span-full py-12 text-stone-400 text-sm"><i class="fa-solid fa-spinner animate-spin mr-2"></i>Đang kết nối kho dữ liệu...</div>
+            <div class="text-center col-span-full py-12 text-stone-400 text-sm"><i class="fa-solid fa-spinner animate-spin mr-2"></i>Đang tải dữ liệu từ kho lưu trữ thiên nhiên...</div>
         </div>
     </main>
 
@@ -121,7 +116,14 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        // Cấu hình Firebase chuẩn của sếp
         const firebaseConfig = {
             apiKey: "AIzaSyDNwZkMqDeOeuJofizFeNY6_uKRzUxdmSE",
             authDomain: "phong-canh-tho-lo.firebaseapp.com",
@@ -129,18 +131,20 @@
             projectId: "phong-canh-tho-lo",
             storageBucket: "phong-canh-tho-lo.firebasestorage.app",
             messagingSenderId: "839192988476",
-            appId: "1:839192988476:web:de981ade118f0cefe0ec39"
+            appId: "1:839192988476:web:de981ade118f0cefe0ec39",
+            measurementId: "G-C6R7JJZ6H9"
         };
 
-        // Khởi chạy
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-        const storage = firebase.storage();
+        // Khởi tạo các dịch vụ hệ thống
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
 
         let isAdmin = false;
 
-        // HIỆU ỨNG MÁY YẾU / MẠNH
+        // HIỆU ỨNG MÁY YẾU / MẠNH (PERFORMANCE TỐI ƯU)
         const btnFxToggle = document.getElementById('btn-fx-toggle');
         const fxIcon = document.getElementById('fx-icon');
         const fxText = document.getElementById('fx-text');
@@ -165,7 +169,7 @@
             return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
         }
 
-        // ĐĂNG NHẬP ADMIN
+        // ĐĂNG NHẬP / KIỂM TRA TRẠNG THÁI ADMIN
         const loginModal = document.getElementById('login-modal');
         document.getElementById('btn-login-trigger').addEventListener('click', () => loginModal.classList.remove('hidden'));
         document.getElementById('btn-close-login').addEventListener('click', () => loginModal.classList.add('hidden'));
@@ -174,21 +178,21 @@
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
             try {
-                await auth.signInWithEmailAndPassword(email, pass);
+                await signInWithEmailAndPassword(auth, email, pass);
                 loginModal.classList.add('hidden');
             } catch (error) {
                 alert("Đăng nhập thất bại: " + error.message);
             }
         });
 
-        auth.onAuthStateChanged((user) => {
+        onAuthStateChanged(auth, (user) => {
             const authButtons = document.getElementById('auth-buttons');
             const adminPanel = document.getElementById('admin-panel');
             if (user) {
                 isAdmin = true;
                 adminPanel.classList.remove('hidden');
                 authButtons.innerHTML = `<span class="mr-2 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full"><i class="fa-solid fa-user-shield mr-1"></i>Sếp Tho Lo</span><button id="btn-logout" class="bg-rose-500 text-white text-xs px-3 py-1.5 rounded-full hover:bg-rose-600 transition">Đăng xuất</button>`;
-                document.getElementById('btn-logout').addEventListener('click', () => auth.signOut());
+                document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
                 listenPendingComments(); 
             } else {
                 isAdmin = false;
@@ -207,7 +211,7 @@
             }
         });
 
-        // TẢI ẢNH LÊN
+        // XỬ LÝ TẢI ẢNH LÊN STORAGE & CẬP NHẬT DATABASE
         document.getElementById('btn-upload').addEventListener('click', async () => {
             const fileInput = document.getElementById('input-file');
             const captionInput = document.getElementById('input-caption');
@@ -223,11 +227,13 @@
             status.classList.remove('hidden');
 
             try {
-                const sRef = storage.ref('photos/' + fileName);
-                const snapshot = await sRef.put(file);
-                const downloadURL = await snapshot.ref.getDownloadURL();
+                const sRef = storageRef(storage, 'photos/' + fileName);
+                const snapshot = await uploadBytes(sRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
 
-                await db.ref('photos').push({
+                const photosRef = dbRef(db, 'photos');
+                const newPhotoRef = push(photosRef);
+                await set(newPhotoRef, {
                     url: downloadURL,
                     caption: caption,
                     storagePath: 'photos/' + fileName,
@@ -244,9 +250,10 @@
             }
         });
 
-        // HIỂN THỊ KHO ẢNH
+        // LẤY DỮ LIỆU VÀ ĐỔ RA LƯỚI ẢNH
         function listenPhotos() {
-            db.ref('photos').on('value', (snapshot) => {
+            const photosRef = dbRef(db, 'photos');
+            onValue(photosRef, (snapshot) => {
                 const gallery = document.getElementById('photo-gallery');
                 if (!gallery) return;
                 gallery.innerHTML = "";
@@ -256,7 +263,7 @@
                         <div class="text-center col-span-full py-12 text-stone-500 bg-white border border-stone-200 rounded-3xl shadow-sm px-4">
                             <i class="fa-solid fa-folder-open block text-3xl mb-3 text-emerald-500/70"></i>
                             <p class="font-semibold text-stone-700 text-sm">Kho ảnh thiên nhiên hiện đang trống!</p>
-                            <p class="text-xs text-stone-400 mt-1">Sếp hãy nhấn nút <b class="text-emerald-600">"Admin"</b> ở góc trên bên phải để đăng nhập quản trị và đăng bức ảnh đầu tiên lên nhé sếp ơi!</p>
+                            <p class="text-xs text-stone-400 mt-1">Sếp hãy nhấn nút <b class="text-emerald-600">"Admin"</b> ở góc trên bên phải để đăng nhập quản trị và đăng bức ảnh đầu tiên lên mạng nhé!</p>
                         </div>`;
                     return;
                 }
@@ -274,7 +281,7 @@
                     card.innerHTML = `
                         <div>
                             <div class="relative overflow-hidden">
-                                <img src="${photoData.url}" class="w-full h-64 object-cover img-zoom">
+                                <img src="${photoData.url}" class="w-full h-64 object-cover img-zoom" loading="lazy">
                                 ${deleteBtn}
                             </div>
                             <div class="p-4">
@@ -302,18 +309,5 @@
                     listenApprovedComments(photoId);
                 });
 
-                // Xóa ảnh
-                document.querySelectorAll('.btn-delete-photo').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        if (!confirm("Xóa bức ảnh này?")) return;
-                        const id = e.currentTarget.getAttribute('data-id');
-                        const sPath = e.currentTarget.getAttribute('data-path');
-                        if (sPath) await storage.ref(sPath).delete().catch(()=>{});
-                        await db.ref('photos/' + id).remove();
-                    });
-                });
-
-                // Thả tim
-                document.querySelectorAll('.btn-like').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const id = e.currentTarget.getAttribu
+                // Xử lý sự kiện Xóa ảnh
+                document.querySelectorAll('.bt
