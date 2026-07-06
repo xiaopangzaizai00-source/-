@@ -12,7 +12,6 @@
         #login-overlay { position: fixed; inset: 0; background: rgba(28,25,23,0.95); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .login-card { background: white; padding: 25px; border-radius: 16px; max-width: 360px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); text-align: center; box-sizing: border-box; }
         
-        /* FORM HIỆN SẴN LUÔN TRÊN MÀN HÌNH CHÍNH */
         .admin-credentials-box { background: #fafaf9; border: 1px solid #e7e5e4; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: left; box-sizing: border-box; }
         
         .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; box-sizing: border-box; }
@@ -40,6 +39,7 @@
 </head>
 <body>
 
+    <!-- GIAO DIỆN ĐĂNG NHẬP -->
     <div id="login-overlay">
         <div class="login-card">
             <div style="font-size: 35px; color: #059669; margin-bottom: 8px;"><i class="fa-solid fa-leaf"></i></div>
@@ -65,6 +65,7 @@
         </div>
     </div>
 
+    <!-- GIAO DIỆN CHÍNH HỆ THỐNG -->
     <div id="main-app" class="hidden">
         <header>
             <h3 style="margin:0; color:#059669; display: flex; align-items: center; gap: 6px;">
@@ -96,13 +97,12 @@
         </footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SỬA LỖI: Nhúng thư viện Supabase CDN mới nhất, tương thích 100% mọi trình duyệt -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
         // KẾT NỐI SUPABASE CỦA SẾP
         const SUPABASE_URL = "https://vfuvjuztxwgsmrkojcfi.supabase.co";
-        
-        // SẾP ĐỔI CHUỖI TIẾNG VIỆT NÀY THÀNH MÃ ANON KEY THẬT CỦA SẾP NHÉ:
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmdXZqdXp0eHdnc21ya29qY2ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNTk0MjMsImV4cCI6MjA5ODgzNTQyM30.GLy0VACDl09VpM1IfE4ysYvtkXgef98jp5EhGArHNLk"; 
+        const SUPABASE_ANON_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmdXZqdXp0eHdnc21ya29qY2ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNTk0MjMsImV4cCI6MjA5ODgzNTQyM30.GLy0VACDl09VpM1IfE4ysYvtkXgef98jp5EhGArHNLk"; 
         
         const clientSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
@@ -169,7 +169,7 @@
                     document.getElementById('admin-email').value = "";
                     document.getElementById('admin-password').value = "";
                 }
-            } catch (err) { alert("Lỗi: " + err.message); } 
+            } catch (err) { alert("Lỗi kết nối: " + err.message); } 
             finally { btn.innerText = "Xác nhận Đăng nhập Admin"; btn.disabled = false; }
         };
 
@@ -211,86 +211,93 @@
                 fileInput.value = ""; captionInput.value = "";
                 alert("Tải lên thành công!");
                 loadPhotos();
-            } catch(err) { alert("Lỗi: " + err.message); } 
+            } catch(err) { alert("Lỗi lưu trữ: " + err.message); } 
             finally { btn.innerText = "Đăng lên hệ thống"; btn.disabled = false; }
         };
 
         async function loadPhotos() {
             if(!currentUser) return;
-            const { data: photos } = await clientSupabase.from('photos').select('*').order('id', { ascending: false });
-            const gallery = document.getElementById('photo-gallery');
-            if(!photos || photos.length === 0) {
-                gallery.innerHTML = `<p style="color:#78716c; text-align:center; font-size:12px; padding:20px;">Chưa có bài đăng nào.</p>`;
-                return;
-            }
-            const currentAuthor = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
+            try {
+                const { data: photos, error } = await clientSupabase.from('photos').select('*').order('id', { ascending: false });
+                if (error) throw error;
+                
+                const gallery = document.getElementById('photo-gallery');
+                if(!photos || photos.length === 0) {
+                    gallery.innerHTML = `<p style="color:#78716c; text-align:center; font-size:12px; padding:20px;">Chưa có bài đăng nào.</p>`;
+                    return;
+                }
+                const currentAuthor = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
 
-            gallery.innerHTML = photos.map(p => {
-                const isAdmin = (currentUser.email === "tholo.nature@gmail.com" || currentAuthor === "Tho Lo");
-                const deleteBtnHtml = isAdmin ? `<button onclick="deletePhoto(${p.id})" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:11px;">Xóa</button>` : '';
+                gallery.innerHTML = photos.map(p => {
+                    const isAdmin = (currentUser.email === "tholo.nature@gmail.com" || currentAuthor === "Tho Lo");
+                    const deleteBtnHtml = isAdmin ? `<button onclick="deletePhoto(${p.id})" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:11px;">Xóa</button>` : '';
 
-                return `
-                    <div class="card">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:11px; font-weight:bold; color:#059669;"><i class="fa-solid fa-user"></i> ${p.author || 'Thành viên'}</span>
-                            ${deleteBtnHtml}
-                        </div>
-                        <img src="${p.url}">
-                        <p style="font-size:13px; margin:10px 0; color:#1c1917;">${p.caption}</p>
-                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f5f5f4; padding-top:8px;">
-                            <button onclick="likePhoto(${p.id}, ${p.likes || 0})" style="color:#f43f5e; background:none; border:none; font-size:12px; cursor:pointer;">
-                                <i class="fa-solid fa-heart"></i> (<span id="like-count-${p.id}">${p.likes || 0}</span>)
-                            </button>
-                            <button onclick="downloadImage('${p.url}', ${p.id})" style="color:#059669; background:none; border:none; font-size:12px; cursor:pointer;">
-                                <i class="fa-solid fa-download"></i> Tải ảnh
-                            </button>
-                        </div>
-                        <div class="comment-section">
-                            <div id="comments-tree-${p.id}" class="comment-tree"></div>
-                            <div style="display:flex; gap:6px; margin-top:8px;">
-                                <input type="text" id="root-cmt-${p.id}" placeholder="Bình luận..." style="flex:1; padding:5px; font-size:11px; border:1px solid #d6d3d1; border-radius:6px;">
-                                <button onclick="addComment(${p.id}, null)" style="background:#059669; color:white; border:none; padding:4px 8px; font-size:11px; border-radius:6px; cursor:pointer;">Gửi</button>
+                    return `
+                        <div class="card">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:11px; font-weight:bold; color:#059669;"><i class="fa-solid fa-user"></i> ${p.author || 'Thành viên'}</span>
+                                ${deleteBtnHtml}
+                            </div>
+                            <img src="${p.url}">
+                            <p style="font-size:13px; margin:10px 0; color:#1c1917;">${p.caption}</p>
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f5f5f4; padding-top:8px;">
+                                <button onclick="likePhoto(${p.id}, ${p.likes || 0})" style="color:#f43f5e; background:none; border:none; font-size:12px; cursor:pointer;">
+                                    <i class="fa-solid fa-heart"></i> (<span id="like-count-${p.id}">${p.likes || 0}</span>)
+                                </button>
+                                <button onclick="downloadImage('${p.url}', ${p.id})" style="color:#059669; background:none; border:none; font-size:12px; cursor:pointer;">
+                                    <i class="fa-solid fa-download"></i> Tải ảnh
+                                </button>
+                            </div>
+                            <div class="comment-section">
+                                <div id="comments-tree-${p.id}" class="comment-tree"></div>
+                                <div style="display:flex; gap:6px; margin-top:8px;">
+                                    <input type="text" id="root-cmt-${p.id}" placeholder="Bình luận..." style="flex:1; padding:5px; font-size:11px; border:1px solid #d6d3d1; border-radius:6px;">
+                                    <button onclick="addComment(${p.id}, null)" style="background:#059669; color:white; border:none; padding:4px 8px; font-size:11px; border-radius:6px; cursor:pointer;">Gửi</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
-            photos.forEach(p => fetchCommentsTree(p.id));
+                    `;
+                }).join('');
+                photos.forEach(p => fetchCommentsTree(p.id));
+            } catch (err) { console.error("Lỗi nạp ảnh:", err); }
         }
 
         async function fetchCommentsTree(photoId) {
             if(!currentUser) return;
-            const treeContainer = document.getElementById(`comments-tree-${photoId}`);
-            const { data: cmts } = await clientSupabase.from('comments').select('*').eq('photo_id', photoId).order('id', { ascending: true });
-            if(!cmts || cmts.length === 0) { treeContainer.innerHTML = ""; return; }
+            try {
+                const treeContainer = document.getElementById(`comments-tree-${photoId}`);
+                const { data: cmts, error } = await clientSupabase.from('comments').select('*').eq('photo_id', photoId).order('id', { ascending: true });
+                if (error) throw error;
+                if(!cmts || cmts.length === 0) { treeContainer.innerHTML = ""; return; }
 
-            const roots = cmts.filter(c => !c.parent_id);
-            const currentAuthor = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
+                const roots = cmts.filter(c => !c.parent_id);
+                const currentAuthor = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
 
-            function generateNodeHtml(comment, level = 0) {
-                const childs = cmts.filter(c => c.parent_id === comment.id);
-                const isOwner = (comment.user_token === currentUser.id || currentAuthor === "Tho Lo" || currentUser.email === "tholo.nature@gmail.com");
-                const deleteCmtBtn = isOwner ? `<button onclick="deleteCmt(${comment.id}, ${photoId})" style="color:#b45309; background:none; border:none; font-size:10px; cursor:pointer;">Xóa</button>` : '';
+                function generateNodeHtml(comment, level = 0) {
+                    const childs = cmts.filter(c => c.parent_id === comment.id);
+                    const isOwner = (comment.user_token === currentUser.id || currentAuthor === "Tho Lo" || currentUser.email === "tholo.nature@gmail.com");
+                    const deleteCmtBtn = isOwner ? `<button onclick="deleteCmt(${comment.id}, ${photoId})" style="color:#b45309; background:none; border:none; font-size:10px; cursor:pointer;">Xóa</button>` : '';
 
-                let html = `
-                    <div style="margin-left: ${level * 12}px; border-left: ${level > 0 ? '1px dashed #cbd5e1' : 'none'}; padding-left: 6px">
-                        <div class="comment-node">
-                            <div style="display:flex; justify-content:space-between; font-weight:bold; color:#1e3a8a; font-size:11px;">
-                                <span>${comment.author}</span> ${deleteCmtBtn}
-                            </div>
-                            <p style="margin:4px 0; color:#374151;">${comment.text}</p>
-                            <span onclick="toggleReplyInput(${comment.id})" style="color:#059669; font-size:10px; cursor:pointer; text-decoration:underline;">Trả lời</span>
-                            <div id="reply-box-${comment.id}" class="hidden reply-box">
-                                <input type="text" id="reply-input-${comment.id}" placeholder="Phản hồi..." style="flex:1; padding:3px; font-size:10px; border:1px solid #cbd5e1; border-radius:4px;">
-                                <button onclick="addComment(${photoId}, ${comment.id})" style="background:#1c1917; color:white; border:none; padding:2px 6px; font-size:10px; border-radius:4px;">Gửi</button>
+                    let html = `
+                        <div style="margin-left: ${level * 12}px; border-left: ${level > 0 ? '1px dashed #cbd5e1' : 'none'}; padding-left: 6px">
+                            <div class="comment-node">
+                                <div style="display:flex; justify-content:space-between; font-weight:bold; color:#1e3a8a; font-size:11px;">
+                                    <span>${comment.author}</span> ${deleteCmtBtn}
+                                </div>
+                                <p style="margin:4px 0; color:#374151;">${comment.text}</p>
+                                <span onclick="toggleReplyInput(${comment.id})" style="color:#059669; font-size:10px; cursor:pointer; text-decoration:underline;">Trả lời</span>
+                                <div id="reply-box-${comment.id}" class="hidden reply-box">
+                                    <input type="text" id="reply-input-${comment.id}" placeholder="Phản hồi..." style="flex:1; padding:3px; font-size:10px; border:1px solid #cbd5e1; border-radius:4px;">
+                                    <button onclick="addComment(${photoId}, ${comment.id})" style="background:#1c1917; color:white; border:none; padding:2px 6px; font-size:10px; border-radius:4px;">Gửi</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-                childs.forEach(child => { html += generateNodeHtml(child, level + 1); });
-                return html;
-            }
-            treeContainer.innerHTML = roots.map(c => generateNodeHtml(c, 0)).join('');
+                    `;
+                    childs.forEach(child => { html += generateNodeHtml(child, level + 1); });
+                    return html;
+                }
+                treeContainer.innerHTML = roots.map(c => generateNodeHtml(c, 0)).join('');
+            } catch (err) { console.error(err); }
         }
 
         window.toggleReplyInput = (id) => {
@@ -321,22 +328,4 @@
 
         window.likePhoto = async (id, currentLikes) => {
             const label = document.getElementById(`like-count-${id}`);
-            const updatedLikes = currentLikes + 1;
-            if (label) label.innerText = updatedLikes;
-            await clientSupabase.from('photos').update({ likes: updatedLikes }).eq('id', id);
-        };
-
-        window.deletePhoto = async (id) => {
-            if(confirm("Xóa bài đăng này?")) {
-                await clientSupabase.from('photos').delete().eq('id', id);
-                loadPhotos();
-            }
-        };
-
-        window.downloadImage = async (url, id) => {
-            try {
-                const response = await fetch(url);
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href
+            const updatedLikes
