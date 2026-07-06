@@ -3,315 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Góc Nhỏ Thiên Nhiên - Tho Lo Nature</title>
+    <title>Tho Lo Nature - Cộng Đồng Bảo Mật</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #059669; border-radius: 10px; }
-
-        .fx-enabled .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        .fx-enabled .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        .fx-enabled .hover-scale { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .fx-enabled .hover-scale:hover { transform: translateY(-4px) scale(1.015); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); }
-        .fx-enabled .img-zoom { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-        .fx-enabled .img-zoom:hover { transform: scale(1.04); }
-
-        .fx-disabled * { animation: none !important; transition: none !important; transform: none !important; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .hover-scale { transition: transform 0.2s ease; }
+        .hover-scale:hover { transform: translateY(-2px); }
+        .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="fx-enabled bg-stone-50 text-stone-800 font-sans min-h-screen flex flex-col antialiased">
+<body class="bg-stone-50 text-stone-800 font-sans min-h-screen flex flex-col antialiased">
 
-    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-emerald-100">
-        <div class="max-w-6xl mx-auto px-4 py-3.5 flex justify-between items-center">
-            <h1 class="text-xl md:text-2xl font-bold text-emerald-700 flex items-center tracking-wide">
-                <i class="fa-solid fa-leaf mr-2 text-emerald-500 animate-pulse-slow"></i>Tho Lo Nature
-            </h1>
+    <div id="login-overlay" class="fixed inset-0 bg-stone-900/90 backdrop-blur-md z-50 flex flex-col items-center justify-center p-4 hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center animate-fade-in">
+            <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-leaf text-2xl text-emerald-600"></i>
+            </div>
+            <h2 class="text-lg font-bold text-stone-800 mb-1">Chào mừng tới Tho Lo Nature</h2>
+            <p class="text-xs text-stone-500 mb-6">Vui lòng đăng nhập bằng tài khoản Google để trải nghiệm không gian thiên nhiên và tương tác cùng mọi người.</p>
             
-            <div class="flex items-center space-x-3">
-                <button id="btn-fx-toggle" class="bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs px-3 py-2 rounded-full font-medium transition flex items-center gap-1.5">
-                    <i id="fx-icon" class="fa-solid fa-bolt text-amber-500"></i>
-                    <span id="fx-text">Máy Mạnh (FX On)</span>
-                </button>
-                <div id="auth-buttons">
-                    <button id="btn-login-trigger" class="bg-emerald-600 text-white text-sm px-4 py-2 rounded-full font-medium hover:bg-emerald-700 transition shadow-sm flex items-center gap-1.5">
-                        <i class="fa-solid fa-user-lock text-xs"></i>Admin
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full">
-        <div id="admin-panel" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-emerald-100 flex flex-col justify-between">
-                <div>
-                    <h3 class="text-base font-semibold mb-3 text-stone-700 flex items-center gap-2">
-                        <i class="fa-solid fa-link text-emerald-500"></i>Đăng Ảnh Bằng Link (Admin)
-                    </h3>
-                    <div class="space-y-3.5">
-                        <input type="text" id="input-url" placeholder="Dán link ảnh (https://...jpg, png)" class="w-full text-sm border border-stone-200 rounded-xl p-2.5 focus:outline-emerald-500 bg-stone-50/50">
-                        <div id="preview-container" class="hidden border border-dashed border-stone-200 rounded-xl p-2 text-center bg-stone-50">
-                            <img id="img-preview" class="max-h-36 mx-auto rounded-lg object-contain shadow-sm">
-                        </div>
-                        <input type="text" id="input-caption" placeholder="Viết vài dòng cảm xúc về thiên nhiên..." class="w-full text-sm border border-stone-200 rounded-xl p-2.5 focus:outline-emerald-500 bg-stone-50/50">
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <button id="btn-upload" class="w-full bg-emerald-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 shadow-sm transition">Đăng Lên Kho Ảnh</button>
-                    <p id="upload-status" class="text-xs text-center font-medium mt-2 text-emerald-600 hidden"></p>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-emerald-100">
-                <h3 class="text-base font-semibold mb-3 text-stone-700 flex items-center gap-2">
-                    <i class="fa-solid fa-clipboard-check text-amber-500"></i>Bình Luận Chờ Duyệt
-                </h3>
-                <div id="pending-comments-list" class="space-y-2.5 max-h-56 overflow-y-auto pr-1">
-                    <p class="text-stone-400 text-xs italic">Không có bình luận nào chờ duyệt.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 border-b border-stone-200 pb-3 gap-2">
-            <h2 class="text-lg font-bold text-stone-800 flex items-center"><i class="fa-solid fa-images mr-2 text-emerald-600"></i>Kho Ảnh Kỷ Niệm Thiên Nhiên</h2>
-            <span class="text-xs text-stone-400 font-medium"><i class="fa-solid fa-calendar-day mr-1"></i>Hệ thống vận hành: GitHub v2026</span>
-        </div>
-
-        <div id="photo-gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="text-center col-span-full py-12 text-stone-400 text-sm"><i class="fa-solid fa-spinner animate-spin mr-2"></i>Đang tải dữ liệu từ kho lưu trữ thiên nhiên...</div>
-        </div>
-    </main>
-
-    <section class="bg-stone-100 border-t border-stone-200 py-6">
-        <div class="max-w-6xl mx-auto px-4 text-xs text-stone-500 leading-relaxed space-y-2">
-            <p class="font-semibold text-stone-700 flex items-center gap-1"><i class="fa-solid fa-copyright text-emerald-600"></i> THÔNG BÁO BẢN QUYỀN HÌNH ẢNH TRÊN WEBSITE:</p>
-            <p>Tất cả các hình ảnh được đăng tải trên trang web này đều thuộc bản quyền hợp pháp của tác giả Tho Lo.</p>
-        </div>
-    </section>
-
-    <footer class="bg-stone-900 text-stone-400 text-xs border-t border-stone-800">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left">
-            <div>Website được đồng lập trình bởi <span class="text-emerald-400 font-medium">Gemini</span> & <span class="text-emerald-400 font-medium">Tho Lo</span>.</div>
-            <div class="font-mono tracking-wider text-stone-500">[@2026 ®✓]</div>
-        </div>
-    </footer>
-
-    <div id="login-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm relative">
-            <button id="btn-close-login" class="absolute top-3.5 right-3.5 text-stone-400 hover:text-stone-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            <h3 class="text-lg font-bold mb-4 text-center text-stone-800"><i class="fa-solid fa-shield-halved text-emerald-600 mr-2"></i>Xác thực quyền Admin</h3>
             <div class="space-y-3">
-                <input type="email" id="login-email" placeholder="Email quản trị" class="w-full text-sm border border-stone-200 rounded-xl p-2.5 focus:outline-emerald-500">
-                <input type="password" id="login-password" placeholder="Mật khẩu" class="w-full text-sm border border-stone-200 rounded-xl p-2.5 focus:outline-emerald-500">
-                <button id="btn-login-submit" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-semibold hover:bg-emerald-700 transition">Đăng Nhập</button>
+                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-stone-300 hover:bg-stone-50 text-stone-700 font-bold py-2.5 px-4 rounded-xl text-xs shadow-sm transition duration-200 cursor-pointer">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24">
+                        <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.11C18.422 1.214 15.6 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.838 11.57-11.64 0-.785-.085-1.393-.188-2.075H12.24z"/>
+                    </svg>
+                    Đăng nhập với Google
+                </button>
+
+                <button id="btn-admin-login" class="w-full flex items-center justify-center gap-3 bg-stone-900 hover:bg-stone-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-sm transition duration-200 cursor-pointer">
+                    <i class="fa-solid fa-user-shield text-emerald-400"></i>
+                    Đăng nhập bằng tài khoản Admin
+                </button>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <div id="main-app" class="opacity-0 transition-opacity duration-300 flex flex-col min-h-screen">
+        <header class="bg-white shadow-xs sticky top-0 z-40 border-b border-stone-100 p-4">
+            <div class="max-w-4xl mx-auto flex justify-between items-center">
+                <h1 class="text-lg font-bold text-emerald-700 flex items-center">
+                    <i class="fa-solid fa-leaf mr-1.5 text-emerald-500"></i>Tho Lo Nature
+                </h1>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <img id="user-avatar" src="" class="w-6 h-6 rounded-full border border-emerald-200">
+                        <span id="user-display-status" class="text-[11px] text-stone-700 font-medium"></span>
+                    </div>
+                    <button id="btn-logout" class="text-[10px] text-rose-500 underline font-medium hover:text-rose-700">Đăng xuất</button>
+                </div>
+            </div>
+        </header>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDNwZkMqDeOeuJofizFeNY6_uKRzUxdmSE",
-            authDomain: "phong-canh-tho-lo.firebaseapp.com",
-            databaseURL: "https://phong-canh-tho-lo-default-rtdb.firebaseio.com",
-            projectId: "phong-canh-tho-lo",
-            messagingSenderId: "839192988476",
-            appId: "1:839192988476:web:de981ade118f0cefe0ec39",
-            measurementId: "G-C6R7JJZ6H9"
+        <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full">
+            <div class="bg-white p-4 rounded-2xl shadow-xs border border-stone-200 mb-6">
+                <h3 class="font-bold text-stone-700 flex items-center gap-2 text-xs mb-3">
+                    <i class="fa-solid fa-camera text-emerald-600"></i> Chia sẻ khoảnh khắc thiên nhiên của bạn
+                </h3>
+                <div class="space-y-3">
+                    <div>
+                        <label for="input-file" class="flex flex-col items-center justify-center w-full h-20 border border-dashed border-stone-300 rounded-xl cursor-pointer bg-stone-50 hover:bg-stone-100/50 transition">
+                            <span id="upload-status" class="text-xs text-stone-500 font-medium"><i class="fa-solid fa-image mr-1 text-emerald-600"></i> Chọn ảnh từ máy</span>
+                            <input id="input-file" type="file" accept="image/*" class="hidden" />
+                        </label>
+                    </div>
+                    <input type="text" id="input-caption" placeholder="Nhập mô tả hoặc cảm xúc về bức ảnh..." class="w-full border p-2 rounded-xl text-xs bg-stone-50 outline-none focus:border-emerald-500">
+                    <button id="btn-upload" class="w-full bg-emerald-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 transition">Đăng Lên Bộ Sưu Tập</button>
+                </div>
+            </div>
+
+            <div class="border-b border-stone-200 pb-2 mb-4">
+                <h2 class="text-xs font-bold text-stone-500 uppercase tracking-wider"><i class="fa-solid fa-images mr-1"></i> Tất cả bài đăng mới nhất</h2>
+            </div>
+
+            <div id="photo-gallery" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </main>
+
+        <footer class="bg-stone-900 text-stone-400 text-[10px] py-4 text-center border-t border-stone-800 mt-auto">
+            <p class="mb-1">© 2026 Không Gian Chia Sẻ Thiên Nhiên Tho Lo Nature</p>
+            <p class="text-stone-500 px-4">Hệ thống bảo mật tích hợp Google Auth công khai.</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://vfuvjuztxwgsmrkojcfi.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmdXZqdXp0eHdnc21ya29qY2ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNTk0MjMsImV4cCI6MjA5ODgzNTQyM30.GLy0VACDl09VpM1IfE4ysYvtkXgef98jp5EhGArHNLk"; // Sếp dán mã Anon Key thực tế vào đây nhé
+        
+        // Đổi tên biến thư viện gốc để không bị trùng lặp hệ thống
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+
+        // KIỂM TRA TRẠNG THÁI ĐĂNG NHẬP KHI VÀO TRANG
+        async function checkUserSession() {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (session) {
+                    currentUser = session.user;
+                    showApp();
+                } else {
+                    showLogin();
+                }
+            } catch (e) {
+                showLogin();
+            }
+        }
+
+        // LẮNG NGHE THAY ĐỔI ĐĂNG NHẬP/ĐĂNG XUẤT
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                currentUser = session.user;
+                showApp();
+            } else {
+                currentUser = null;
+                showLogin();
+            }
+        });
+
+        function showLogin() {
+            document.getElementById('login-overlay').classList.remove('hidden');
+            document.getElementById('main-app').classList.add('opacity-0');
+        }
+
+        function showApp() {
+            if (!currentUser) return;
+            document.getElementById('login-overlay').classList.add('hidden');
+            const app = document.getElementById('main-app');
+            app.classList.remove('opacity-0');
+            
+            const fullName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
+            const avatarUrl = (currentUser.user_metadata && currentUser.user_metadata.avatar_url) ? currentUser.user_metadata.avatar_url : "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80";
+            
+            document.getElementById('user-display-status').innerText = fullName;
+            document.getElementById('user-avatar').src = avatarUrl;
+            
+            loadPhotos();
+        }
+
+        // SỰ KIỆN NÚT BẤM ĐĂNG NHẬP GOOGLE
+        document.getElementById('btn-google-login').onclick = async () => {
+            await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.href
+                }
+            });
         };
 
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-
-        let isAdmin = false;
-
-        // HIỆU ỨNG MÁY YẾU / MẠNH
-        const btnFxToggle = document.getElementById('btn-fx-toggle');
-        const fxIcon = document.getElementById('fx-icon');
-        const fxText = document.getElementById('fx-text');
-
-        if (localStorage.getItem('perfMode') === 'low') setLowPerfMode();
-        btnFxToggle.addEventListener('click', () => document.body.classList.contains('fx-enabled') ? setLowPerfMode() : setHighPerfMode());
-
-        function setLowPerfMode() {
-            document.body.className = "fx-disabled bg-stone-50 text-stone-800 font-sans min-h-screen flex flex-col antialiased";
-            fxIcon.className = "fa-solid fa-leaf text-stone-400"; fxText.innerText = "Máy Yếu (Mượt Hơn)";
-            localStorage.setItem('perfMode', 'low');
-        }
-        function setHighPerfMode() {
-            document.body.className = "fx-enabled bg-stone-50 text-stone-800 font-sans min-h-screen flex flex-col antialiased";
-            fxIcon.className = "fa-solid fa-bolt text-amber-500"; fxText.innerText = "Máy Mạnh (FX On)";
-            localStorage.setItem('perfMode', 'high');
-        }
-
-        function formatDate(timestamp) {
-            if (!timestamp) return "";
-            const date = new Date(timestamp);
-            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-        }
-
-        // ĐĂNG NHẬP ADMIN
-        const loginModal = document.getElementById('login-modal');
-        document.getElementById('btn-login-trigger').addEventListener('click', () => loginModal.classList.remove('hidden'));
-        document.getElementById('btn-close-login').addEventListener('click', () => loginModal.classList.add('hidden'));
-
-        document.getElementById('btn-login-submit').addEventListener('click', async () => {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-                loginModal.classList.add('hidden');
-            } catch (error) {
-                alert("Đăng nhập thất bại: " + error.message);
-            }
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            const authButtons = document.getElementById('auth-buttons');
-            const adminPanel = document.getElementById('admin-panel');
-            if (user) {
-                isAdmin = true;
-                adminPanel.classList.remove('hidden');
-                authButtons.innerHTML = `<span class="mr-2 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full"><i class="fa-solid fa-user-shield mr-1"></i>Sếp Tho Lo</span><button id="btn-logout" class="bg-rose-500 text-white text-xs px-3 py-1.5 rounded-full hover:bg-rose-600 transition">Đăng xuất</button>`;
-                document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-                listenPendingComments(); 
-            } else {
-                isAdmin = false;
-                adminPanel.classList.add('hidden');
-                authButtons.innerHTML = `<button id="btn-login-trigger" class="bg-emerald-600 text-white text-xs px-4 py-2 rounded-full font-medium hover:bg-emerald-700 transition"><i class="fa-solid fa-user-lock mr-1"></i>Admin</button>`;
-                document.getElementById('btn-login-trigger').addEventListener('click', () => loginModal.classList.remove('hidden'));
-            }
-            listenPhotos();
-        });
-
-        // Live Preview link ảnh khi nhập vào ô
-        document.getElementById('input-url').addEventListener('input', (e) => {
-            const url = e.target.value.trim();
-            if (url.startsWith('http')) {
-                document.getElementById('img-preview').src = url;
-                document.getElementById('preview-container').classList.remove('hidden');
-            } else {
-                document.getElementById('preview-container').classList.add('hidden');
-            }
-        });
-
-        // ĐĂNG ẢNH QUA ĐƯỜNG LINK THẲNG VÀO DATABASE
-        document.getElementById('btn-upload').addEventListener('click', async () => {
-            const urlInput = document.getElementById('input-url');
-            const captionInput = document.getElementById('input-caption');
-            const status = document.getElementById('upload-status');
-
-            const imgUrl = urlInput.value.trim();
-            if (!imgUrl) return alert("Vui lòng dán link ảnh vào!");
-
-            const caption = captionInput.value.trim() || "Cảm nhận vẻ đẹp thiên nhiên cùng Tho Lo Nature.";
-            
-            status.innerText = "Đang lưu thông tin ảnh...";
-            status.classList.remove('hidden');
+        // SỰ KIỆN NÚT BẤM ĐĂNG NHẬP ADMIN
+        document.getElementById('btn-admin-login').onclick = async () => {
+            const btn = document.getElementById('btn-admin-login');
+            btn.innerText = "Đang kết nối Admin...";
+            btn.disabled = true;
 
             try {
-                const photosRef = dbRef(db, 'photos');
-                const newPhotoRef = push(photosRef);
-                await set(newPhotoRef, {
-                    url: imgUrl,
-                    caption: caption,
-                    likes: 0,
-                    createdAt: Date.now()
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: 'tholo.nature@gmail.com',
+                    password: 'Tholonatureadmin'
                 });
-
-                status.innerText = "Đăng ảnh thành công!";
-                urlInput.value = ""; captionInput.value = "";
-                document.getElementById('preview-container').classList.add('hidden');
-                setTimeout(() => status.classList.add('hidden'), 3000);
-            } catch (error) {
-                status.innerText = "Lỗi: " + error.message;
+                if (error) throw error;
+            } catch (err) {
+                alert("Lỗi đăng nhập Admin: " + err.message);
+            } finally {
+                btn.innerHTML = `<i class="fa-solid fa-user-shield text-emerald-400"></i> Đăng nhập bằng tài khoản Admin`;
+                btn.disabled = false;
             }
-        });
+        };
 
-        // HIỂN THỊ LƯỚI ẢNH
-        function listenPhotos() {
-            const photosRef = dbRef(db, 'photos');
-            onValue(photosRef, (snapshot) => {
-                const gallery = document.getElementById('photo-gallery');
-                if (!gallery) return;
-                gallery.innerHTML = "";
+        // SỰ KIỆN ĐĂNG XUẤT
+        document.getElementById('btn-logout').onclick = async () => {
+            if(confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
+                await supabase.auth.signOut();
+            }
+        };
 
-                if (!snapshot.exists()) {
-                    gallery.innerHTML = `
-                        <div class="text-center col-span-full py-12 text-stone-500 bg-white border border-stone-200 rounded-3xl shadow-sm px-4">
-                            <i class="fa-solid fa-folder-open block text-3xl mb-3 text-emerald-500/70"></i>
-                            <p class="font-semibold text-stone-700 text-sm">Kho ảnh thiên nhiên hiện đang trống!</p>
-                            <p class="text-xs text-stone-400 mt-1">Sếp hãy nhấn nút <b class="text-emerald-600">"Admin"</b> ở góc trên bên phải để đăng nhập quản trị và dán link bức ảnh đầu tiên lên mạng nhé!</p>
-                        </div>`;
-                    return;
-                }
+        // CHỌN FILE ĐĂNG ẢNH
+        let selectedFile = null;
+        document.getElementById('input-file').onchange = (e) => {
+            if(e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                document.getElementById('upload-status').innerText = `Đã chọn: ${selectedFile.name}`;
+            }
+        };
 
-                const data = snapshot.val();
-                const sortedKeys = Object.keys(data).sort((a,b) => data[b].createdAt - data[a].createdAt);
+        document.getElementById('btn-upload').onclick = async () => {
+            if(!selectedFile) { alert("Sếp ơi chưa chọn file ảnh nào ạ!"); return; }
+            if(!currentUser) return;
+            
+            const btn = document.getElementById('btn-upload');
+            btn.innerText = "Đang tải ảnh lên...";
+            btn.disabled = true;
 
-                sortedKeys.forEach((photoId) => {
-                    const photoData = data[photoId];
-                    const card = document.createElement('div');
-                    card.className = "bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden flex flex-col justify-between relative hover-scale animate-fade-in";
-                    
-                    let deleteBtn = isAdmin ? '<button data-id="' + photoId + '" class="btn-delete-photo absolute top-3 right-3 bg-rose-600/90 text-white p-2 rounded-full hover:bg-rose-700 transition shadow-md"><i class="fa-solid fa-trash-can text-xs"></i></button>' : '';
+            try {
+                const fileName = `${Date.now()}.jpg`;
+                const { error: storageErr } = await supabase.storage.from('nature-images').upload(fileName, selectedFile);
+                if(storageErr) throw storageErr;
 
-                    card.innerHTML = `
+                const { data } = supabase.storage.from('nature-images').getPublicUrl(fileName);
+                const authorName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
+
+                await supabase.from('photos').insert([{
+                    url: data.publicUrl,
+                    caption: document.getElementById('input-caption').value.trim() || "Ảnh thiên nhiên bình yên.",
+                    author: authorName
+                }]);
+
+                selectedFile = null;
+                document.getElementById('input-file').value = "";
+                document.getElementById('input-caption').value = "";
+                document.getElementById('upload-status').innerHTML = `<i class="fa-solid fa-image mr-1 text-emerald-600"></i> Chọn ảnh từ máy`;
+                loadPhotos();
+            } catch(err) {
+                alert("Lỗi tải lên: " + err.message);
+            } finally {
+                btn.innerText = "Đăng Lên Bộ Sưu Tập";
+                btn.disabled = false;
+            }
+        };
+
+        // TẢI ALBUM ẢNH CHÍNH
+        async function loadPhotos() {
+            if(!currentUser) return;
+            const { data: photos } = await supabase.from('photos').select('*').order('id', { ascending: false });
+            const gallery = document.getElementById('photo-gallery');
+            if(!photos || photos.length === 0) {
+                gallery.innerHTML = `<p class="text-stone-400 text-center col-span-full py-8 text-xs">Chưa có bức ảnh nào được chia sẻ.</p>`;
+                return;
+            }
+
+            const authorName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
+
+            gallery.innerHTML = photos.map(p => {
+                const isAdmin = (currentUser.email === "tholo.nature@gmail.com" || authorName === "Tho Lo");
+                const deletePhotoBtn = isAdmin ? `<button onclick="deletePhoto(${p.id})" class="text-[10px] text-rose-500 hover:underline"><i class="fa-solid fa-trash"></i> Xóa bài</button>` : '';
+
+                return `
+                    <div class="bg-white p-4 rounded-2xl shadow-xs border border-stone-200 flex flex-col justify-between hover-scale transition duration-300 animate-fade-in">
                         <div>
-                            <div class="relative overflow-hidden">
-                                <img src="${photoData.url}" class="w-full h-64 object-cover img-zoom" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1501854140801-50d01698950b?w=500'">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded"><i class="fa-solid fa-user text-[8px]"></i> ${p.author || 'Ẩn danh'}</span>
+                                ${deletePhotoBtn}
+                            </div>
+                            <img src="${p.url}" class="w-full h-48 object-cover rounded-xl mb-2 bg-stone-100">
+                            <p class="text-xs text-stone-700 font-medium px-1 mb-3">${p.caption}</p>
+                            
+                            <div class="bg-stone-50 p-2.5 rounded-xl border border-stone-200 mb-3">
+                                <span class="text-[9px] uppercase font-bold text-stone-400 tracking-wider">Hội thoại bình luận</span>
+                                <div id="comments-tree-${p.id}" class="space-y-2 mt-1 max-h-44 overflow-y-auto pr-1 text-xs"></div>
+                                
+                                <div class="flex gap-1.5 mt-2.5 pt-2 border-t border-stone-200">
+                                    <input type="text" id="root-cmt-input-${p.id}" placeholder="Để lại lời nhắn..." class="flex-1 bg-white border border-stone-200 text-xs px-2 py-1 rounded-lg outline-none focus:border-emerald-500">
+                                    <button onclick="addComment(${p.id}, null)" class="bg-emerald-600 text-white px-2.5 rounded-lg text-xs font-bold">Gửi</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-stone-100 flex justify-between items-center">
+                            <button onclick="likePhoto(${p.id}, ${p.likes || 0})" class="text-rose-500 font-bold text-xs flex items-center gap-1">
+                                <i class="fa-solid fa-heart"></i> <span id="like-count-${p.id}">${p.likes || 0}</span>
+                            </button>
+                            <button onclick="downloadImage('${p.url}', ${p.id})" class="text-emerald-600 font-bold text-xs"><i class="fa-solid fa-download"></i> Tải ảnh gốc</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            photos.forEach(p => fetchCommentsTree(p.id));
+        }
+
+        // TẢI VÀ DỰNG CÂY BÌNH LUẬN ĐỆ QUY
+        async function fetchCommentsTree(photoId) {
+            if(!currentUser) return;
+            const treeBox = document.getElementById(`comments-tree-${photoId}`);
+            const { data: cmts } = await supabase.from('comments').select('*').eq('photo_id', photoId).order('id', { ascending: true });
+            if(!cmts || cmts.length === 0) {
+                treeBox.innerHTML = `<p class="text-stone-400 italic text-[10px] py-0.5">Chưa có bình luận nào.</p>`;
+                return;
+            }
+
+            const roots = cmts.filter(c => !c.parent_id);
+            const authorName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
+            
+            function buildTreeHtml(comment, level = 0) {
+                const childs = cmts.filter(c => c.parent_id === comment.id);
+                const isOwner = (comment.user_token === currentUser.id || authorName === "Tho Lo" || currentUser.email === "tholo.nature@gmail.com");
+                const deleteBtn = isOwner ? `<button onclick="deleteCmt(${comment.id}, ${photoId})" class="text-[9px] text-stone-400 hover:text-rose-500 ml-2">Xóa</button>` : '';
+                
+                let html = `
+                    <div class="animate-fade-in mt-1.5" style="margin-left: ${level * 12}px; border-left: ${level > 0 ? '1.5px dashed #d6d3d1' : 'none'}; padding-left: ${level > 0 ? '6px' : '0px'}">
+                        <div class="bg-white p-1.5 px-2 rounded-lg border border-stone-200/80 shadow-3xs">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-emerald-800 text-[10px]">${comment.author}</span>
                                 ${deleteBtn}
                             </div>
-                            <div class="p-4">
-                                <span class="text-[10px] text-stone-400 font-medium block mb-1.5"><i class="fa-regular fa-clock mr-1"></i>${formatDate(photoData.createdAt)}</span>
-                                <p class="text-stone-700 font-medium mb-4 text-sm leading-relaxed">${photoData.caption}</p>
-                                <div class="flex items-center space-x-4 border-b border-stone-50 pb-3 mb-3">
-                                    <button data-id="${photoId}" data-likes="${photoData.likes || 0}" class="btn-like text-stone-400 hover:text-rose-500 transition flex items-center space-x-1.5">
-                                        <i class="fa-solid fa-heart text-base text-stone-200"></i>
-                                        <span class="text-xs font-bold text-stone-600">${photoData.likes || 0}</span>
-                                    </button>
-                                    <a href="${photoData.url}" download target="_blank" class="text-stone-400 hover:text-emerald-600 transition flex items-center space-x-1.5">
-                                        <i class="fa-solid fa-arrow-down-long text-base"></i>
-                                        <span class="text-xs font-bold text-stone-600">Mở ảnh gốc</span>
-                                    </a>
-                                </div>
-                                <div class="space-y-2 mb-2 max-h-36 overflow-y-auto pr-1" id="comments-${photoId}"></div>
+                            <p class="text-stone-700 text-[11px] mt-0.5 leading-tight">${comment.text}</p>
+                            <button onclick="toggleReplyInput(${comment.id})" class="text-[9px] text-emerald-600 font-semibold mt-0.5 block hover:underline"><i class="fa-solid fa-reply text-[7px] rotate-180"></i> Trả lời</button>
+                            
+                            <div id="reply-box-${comment.id}" class="hidden flex gap-1 mt-1.5 pt-1.5 border-t border-stone-10/50">
+                                <input type="text" id="reply-input-${comment.id}" placeholder="Phản hồi ${comment.author}..." class="flex-1 bg-stone-50 border text-[10px] px-2 py-0.5 rounded outline-none focus:border-emerald-500">
+                                <button onclick="addComment(${photoId}, ${comment.id})" class="bg-stone-700 text-white text-[9px] px-2 rounded font-bold">Gửi</button>
                             </div>
                         </div>
-                        <div class="p-3 bg-stone-50 border-t border-stone-100 flex gap-2">
-                            <input type="text" id="comment-input-${photoId}" placeholder="Chia sẻ cảm xúc của bạn..." class="w-full bg-white border border-stone-200 rounded-xl p-2 text-xs focus:outline-emerald-500">
-                            <button data-id="${photoId}" class="btn-send-comment bg-emerald-600 text-white px-3 py-2 rounded-xl text-xs hover:bg-emerald-700 transition"><i class="fa-solid fa-paper-plane"></i></button>
-                        </div>
-                    `;
-                    gallery.appendChild(card);
-                    listenApprovedComments(photoId);
-                });
+                    </div>
+                `;
 
-                // Xóa dữ liệu ảnh khỏi database
-                document.querySelectorAll('.btn-delete-photo').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        if (!confirm("Xóa bức ảnh này khỏi danh sách?")) return;
-                        const id = e.currentTarget.getAttribute('data-id');
-                        await remove(dbRef(db, 'photos/' + id));
-                    });
-                });
+                childs.forEach(child => { html += buildTreeHtml(child, level + 1); });
+                return html;
+            }
 
-                // Thả tim
-                document.querySelectorAll('.btn-like').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const id = e.currentTarget.getAttribute('data-id');
-                    
+            treeBox.innerHTML = roots.map(c => buildTreeHtml(c, 0)).join('');
+        }
+
+        window.toggleReplyInput = (id) => {
+            const el = document.getElementById(`reply-box-${id}`);
+            if(el) el.classList.toggle('hidden');
+        };
+
+        window.addComment = async (photoId, parentId) => {
+            if(!currentUser) return;
+            let inputEl = parentId ? document.getElementById(`reply-input-${parentId}`) : document.getElementById(`root-cmt-input-${photoId}`);
+            let text = inputEl.value.trim();
+            if(!text) return;
+
+            const authorName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
+
+            await supabase.from('comments').insert([{
+                photo_id: photoId,
+                parent_id: parentId,
+                author: authorName,
+                text: text,
+                user_token: currentUser.id
+            }]);
+
+            inputEl.value = "";
+            fetchCommentsTree(photoId);
+        };
+
+        window.deleteCmt = async (id, photoId) => {
+            if(confirm("Bạn muốn xóa dòng bình luận này chứ?")) {
+                await supabase.from('comments').delete().eq('id', id);
+                fetchCommentsTree(photoId);
+            }
+        };
+
+        window.likePhoto = async (id, currentLikes) => {
+            const label = document.getElement
