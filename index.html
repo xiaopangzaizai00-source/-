@@ -4,103 +4,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tho Lo Nature - Cộng Đồng Bảo Mật</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #059669; border-radius: 10px; }
-        .hover-scale { transition: transform 0.2s ease; }
-        .hover-scale:hover { transform: translateY(-2px); }
-        .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        /* HỆ THỐNG CSS THUẦN - ĐẢM BẢO CHẠY MƯỢT, KHÔNG LO LỖI TRẮNG TRANG */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f5f5f4; color: #1c1917; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        .hidden { display: none !important; }
+        
+        /* Giao diện khóa đăng nhập */
+        #login-overlay { position: fixed; inset: 0; background: rgba(28,25,23,0.95); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: white; padding: 30px; border-radius: 16px; max-w: 360px; w: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); text-align: center; box-sizing: border-box; }
+        
+        /* Form nhập thông tin Admin ẩn/hiện */
+        .admin-credentials-box { background: #fafaf9; border: 1px solid #e7e5e4; padding: 15px; border-radius: 10px; margin-top: 12px; text-align: left; transition: all 0.3s ease; }
+        
+        /* Nút bấm tổng thể */
+        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 12px; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; box-sizing: border-box; }
+        .btn-google { background: white; border: 1px solid #d6d3d1; color: #444; }
+        .btn-google:hover { background: #f5f5f4; }
+        .btn-admin { background: #1c1917; color: white; }
+        .btn-admin:hover { background: #2e2a27; }
+        .btn-primary { background: #059669; color: white; }
+        .btn-primary:hover { background: #047857; }
+        
+        /* Header & Khung chính */
+        header { background: white; padding: 15px 20px; border-bottom: 1px solid #e7e5e4; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+        main { max-width: 700px; margin: 0 auto; padding: 20px; flex-grow: 1; width: 100%; box-sizing: border-box; }
+        
+        /* Form đăng ảnh */
+        .upload-box { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e7e5e4; margin-bottom: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .input-text { width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #d6d3d1; box-sizing: border-box; outline: none; font-size: 13px; }
+        .input-text:focus { border-color: #059669; }
+        
+        /* Danh sách bài đăng Gallery */
+        .gallery { display: grid; grid-template-columns: 1fr; gap: 25px; }
+        .card { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e7e5e4; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card img { width: 100%; height: auto; max-height: 400px; object-fit: cover; border-radius: 10px; margin-top: 10px; background: #fafaf9; }
+        
+        /* Hệ thống bình luận cây */
+        .comment-section { background: #fafaf9; padding: 12px; border-radius: 10px; border: 1px solid #e7e5e4; margin-top: 15px; }
+        .comment-tree { max-height: 250px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px; }
+        .comment-node { padding: 6px 10px; background: white; border: 1px solid #e7e5e4; border-radius: 8px; margin-top: 8px; font-size: 12px; }
+        .reply-box { display: flex; gap: 5px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e7e5e4; }
+        
+        /* Footer */
+        footer { background: #1c1917; color: #a8a29e; text-align: center; padding: 15px; font-size: 11px; margin-top: auto; }
     </style>
 </head>
-<body class="bg-stone-50 text-stone-800 font-sans min-h-screen flex flex-col antialiased">
+<body>
 
-    <div id="login-overlay" class="fixed inset-0 bg-stone-900/90 backdrop-blur-md z-50 flex flex-col items-center justify-center p-4 hidden">
-        <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center animate-fade-in">
-            <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fa-solid fa-leaf text-2xl text-emerald-600"></i>
-            </div>
-            <h2 class="text-lg font-bold text-stone-800 mb-1">Chào mừng tới Tho Lo Nature</h2>
-            <p class="text-xs text-stone-500 mb-6">Vui lòng đăng nhập bằng tài khoản Google để trải nghiệm không gian thiên nhiên và tương tác cùng mọi người.</p>
+    <div id="login-overlay">
+        <div class="login-card">
+            <div style="font-size: 40px; color: #059669; margin-bottom: 10px;"><i class="fa-solid fa-leaf"></i></div>
+            <h2 style="margin: 0 0 5px 0; color: #1c1917;">Tho Lo Nature</h2>
+            <p style="font-size: 12px; color: #666; margin-bottom: 20px; line-height: 1.4;">Vui lòng đăng nhập để tham gia cộng đồng chia sẻ hình ảnh và tương tác thiên nhiên.</p>
             
-            <div class="space-y-3">
-                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-stone-300 hover:bg-stone-50 text-stone-700 font-bold py-2.5 px-4 rounded-xl text-xs shadow-sm transition duration-200 cursor-pointer">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24">
-                        <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.11C18.422 1.214 15.6 0 12.24 0 5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.838 11.57-11.64 0-.785-.085-1.393-.188-2.075H12.24z"/>
-                    </svg>
-                    Đăng nhập với Google
-                </button>
+            <button id="btn-google-login" class="btn btn-google">
+                <i class="fa-brands fa-google" style="color: #ea4335;"></i> Đăng nhập với Google
+            </button>
+            
+            <button id="btn-admin-toggle" class="btn btn-admin">
+                <i class="fa-solid fa-user-shield" style="color: #10b981;"></i> Đăng nhập tài khoản Admin
+            </button>
 
-                <button id="btn-admin-login" class="w-full flex items-center justify-center gap-3 bg-stone-900 hover:bg-stone-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-sm transition duration-200 cursor-pointer">
-                    <i class="fa-solid fa-user-shield text-emerald-400"></i>
-                    Đăng nhập bằng tài khoản Admin
-                </button>
+            <div id="admin-form-box" class="admin-credentials-box hidden">
+                <label style="font-size: 11px; font-weight: bold; color: #444;">Email Admin:</label>
+                <input type="email" id="admin-email" placeholder="Nhập email quản trị..." class="input-text" style="margin-top: 4px; margin-bottom: 10px;">
+                
+                <label style="font-size: 11px; font-weight: bold; color: #444;">Mật khẩu:</label>
+                <input type="password" id="admin-password" placeholder="Nhập mật khẩu..." class="input-text" style="margin-top: 4px; margin-bottom: 12px;">
+                
+                <button id="btn-admin-submit" class="btn btn-primary" style="margin-top: 0;">Xác thực hệ thống</button>
             </div>
         </div>
     </div>
 
-    <div id="main-app" class="opacity-0 transition-opacity duration-300 flex flex-col min-h-screen">
-        <header class="bg-white shadow-xs sticky top-0 z-40 border-b border-stone-100 p-4">
-            <div class="max-w-4xl mx-auto flex justify-between items-center">
-                <h1 class="text-lg font-bold text-emerald-700 flex items-center">
-                    <i class="fa-solid fa-leaf mr-1.5 text-emerald-500"></i>Tho Lo Nature
-                </h1>
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2">
-                        <img id="user-avatar" src="" class="w-6 h-6 rounded-full border border-emerald-200">
-                        <span id="user-display-status" class="text-[11px] text-stone-700 font-medium"></span>
-                    </div>
-                    <button id="btn-logout" class="text-[10px] text-rose-500 underline font-medium hover:text-rose-700">Đăng xuất</button>
-                </div>
+    <div id="main-app" class="hidden">
+        <header>
+            <h3 style="margin:0; color:#059669; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-leaf"></i> Tho Lo Nature
+            </h3>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img id="user-avatar" src="" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid #059669;">
+                <span id="user-display-status" style="font-size: 12px; font-weight: bold; color: #444;"></span>
+                <button id="btn-logout" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 11px; font-weight: bold; text-decoration: underline;">Đăng xuất</button>
             </div>
         </header>
 
-        <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full">
-            <div class="bg-white p-4 rounded-2xl shadow-xs border border-stone-200 mb-6">
-                <h3 class="font-bold text-stone-700 flex items-center gap-2 text-xs mb-3">
-                    <i class="fa-solid fa-camera text-emerald-600"></i> Chia sẻ khoảnh khắc thiên nhiên của bạn
-                </h3>
-                <div class="space-y-3">
-                    <div>
-                        <label for="input-file" class="flex flex-col items-center justify-center w-full h-20 border border-dashed border-stone-300 rounded-xl cursor-pointer bg-stone-50 hover:bg-stone-100/50 transition">
-                            <span id="upload-status" class="text-xs text-stone-500 font-medium"><i class="fa-solid fa-image mr-1 text-emerald-600"></i> Chọn ảnh từ máy</span>
-                            <input id="input-file" type="file" accept="image/*" class="hidden" />
-                        </label>
-                    </div>
-                    <input type="text" id="input-caption" placeholder="Nhập mô tả hoặc cảm xúc về bức ảnh..." class="w-full border p-2 rounded-xl text-xs bg-stone-50 outline-none focus:border-emerald-500">
-                    <button id="btn-upload" class="w-full bg-emerald-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 transition">Đăng Lên Bộ Sưu Tập</button>
-                </div>
+        <main>
+            <div class="upload-box">
+                <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #333;"><i class="fa-solid fa-camera" style="color: #059669;"></i> Chia sẻ khoảnh khắc của bạn</h4>
+                <input type="file" id="input-file" accept="image/*" class="input-text" style="padding: 6px;">
+                <input type="text" id="input-caption" placeholder="Nhập mô tả hoặc trạng thái về bức ảnh..." class="input-text">
+                <button id="btn-upload" class="btn btn-primary" style="margin-top: 12px;">Đăng lên bộ sưu tập</button>
             </div>
 
-            <div class="border-b border-stone-200 pb-2 mb-4">
-                <h2 class="text-xs font-bold text-stone-500 uppercase tracking-wider"><i class="fa-solid fa-images mr-1"></i> Tất cả bài đăng mới nhất</h2>
-            </div>
-
-            <div id="photo-gallery" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            <h4 style="border-bottom: 2px solid #059669; padding-bottom: 6px; margin: 30px 0 15px 0; color: #374151; font-size: 13px; text-transform: uppercase; tracking-wider;">
+                <i class="fa-solid fa-images"></i> Tất cả bài đăng mới nhất
+            </h4>
+            
+            <div id="photo-gallery" class="gallery"></div>
         </main>
 
-        <footer class="bg-stone-900 text-stone-400 text-[10px] py-4 text-center border-t border-stone-800 mt-auto">
-            <p class="mb-1">© 2026 Không Gian Chia Sẻ Thiên Nhiên Tho Lo Nature</p>
-            <p class="text-stone-500 px-4">Hệ thống bảo mật tích hợp Google Auth công khai.</p>
+        <footer>
+            <p style="margin: 0 0 4px 0;">© 2026 Không Gian Chia Sẻ Thiên Nhiên Tho Lo Nature</p>
+            <p style="margin: 0; color: #78716c; font-size: 10px;">Hệ thống chạy trên nền tảng Supabase Cloud Security.</p>
         </footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Cấu hình thông số Supabase của Sếp
         const SUPABASE_URL = "https://vfuvjuztxwgsmrkojcfi.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmdXZqdXp0eHdnc21ya29qY2ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNTk0MjMsImV4cCI6MjA5ODgzNTQyM30.GLy0VACDl09VpM1IfE4ysYvtkXgef98jp5EhGArHNLk"; // Sếp dán mã Anon Key thực tế vào đây nhé
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmdXZqdXp0eHdnc21ya29qY2ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNTk0MjMsImV4cCI6MjA5ODgzNTQyM30.GLy0VACDl09VpM1IfE4ysYvtkXgef98jp5EhGArHNLk"; 
         
-        // Đổi tên biến thư viện gốc để không bị trùng lặp hệ thống
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        // Tạo biến kết nối độc lập, loại bỏ lỗi trùng tên thư viện gây sập web
+        const clientSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
 
-        // KIỂM TRA TRẠNG THÁI ĐĂNG NHẬP KHI VÀO TRANG
+        // 1. KIỂM TRA PHIÊN ĐĂNG NHẬP KHI TẢI TRANG
         async function checkUserSession() {
             try {
-                const { data: { session }, error } = await supabase.auth.getSession();
+                const { data: { session } } = await clientSupabase.auth.getSession();
                 if (session) {
                     currentUser = session.user;
                     showApp();
@@ -112,8 +136,8 @@
             }
         }
 
-        // LẮNG NGHE THAY ĐỔI ĐĂNG NHẬP/ĐĂNG XUẤT
-        supabase.auth.onAuthStateChange((event, session) => {
+        // LẮNG NGHE ĐỔI TRẠNG THÁI AUTH ĐỂ CHUYỂN TRANG TỰ ĐỘNG
+        clientSupabase.auth.onAuthStateChange((event, session) => {
             if (session) {
                 currentUser = session.user;
                 showApp();
@@ -124,148 +148,164 @@
         });
 
         function showLogin() {
-            document.getElementById('login-overlay').classList.remove('hidden');
-            document.getElementById('main-app').classList.add('opacity-0');
+            document.getElementById('login-overlay').style.setProperty('display', 'flex', 'important');
+            document.getElementById('main-app').classList.add('hidden');
         }
 
         function showApp() {
             if (!currentUser) return;
-            document.getElementById('login-overlay').classList.add('hidden');
-            const app = document.getElementById('main-app');
-            app.classList.remove('opacity-0');
+            document.getElementById('login-overlay').style.setProperty('display', 'none', 'important');
+            document.getElementById('main-app').classList.remove('hidden');
             
+            // Lấy tên hiển thị
             const fullName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
-            const avatarUrl = (currentUser.user_metadata && currentUser.user_metadata.avatar_url) ? currentUser.user_metadata.avatar_url : "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80";
-            
             document.getElementById('user-display-status').innerText = fullName;
-            document.getElementById('user-avatar').src = avatarUrl;
+            
+            // Lấy Avatar
+            document.getElementById('user-avatar').src = (currentUser.user_metadata && currentUser.user_metadata.avatar_url) ? currentUser.user_metadata.avatar_url : "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80";
             
             loadPhotos();
         }
 
-        // SỰ KIỆN NÚT BẤM ĐĂNG NHẬP GOOGLE
+        // 2. XỬ LÝ ĐĂNG NHẬP GOOGLE
         document.getElementById('btn-google-login').onclick = async () => {
-            await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.href
-                }
+            await clientSupabase.auth.signInWithOAuth({ 
+                provider: 'google', 
+                options: { redirectTo: window.location.href } 
             });
         };
 
-        // SỰ KIỆN NÚT BẤM ĐĂNG NHẬP ADMIN
-        document.getElementById('btn-admin-login').onclick = async () => {
-            const btn = document.getElementById('btn-admin-login');
-            btn.innerText = "Đang kết nối Admin...";
-            btn.disabled = true;
-
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: 'tholo.nature@gmail.com',
-                    password: 'Tholonatureadmin'
-                });
-                if (error) throw error;
-            } catch (err) {
-                alert("Lỗi đăng nhập Admin: " + err.message);
-            } finally {
-                btn.innerHTML = `<i class="fa-solid fa-user-shield text-emerald-400"></i> Đăng nhập bằng tài khoản Admin`;
-                btn.disabled = false;
-            }
+        // 3. ĐÓNG/MỞ KHUNG ĐIỀN THÔNG TIN ADMIN
+        document.getElementById('btn-admin-toggle').onclick = () => {
+            const formBox = document.getElementById('admin-form-box');
+            formBox.classList.toggle('hidden');
         };
 
-        // SỰ KIỆN ĐĂNG XUẤT
-        document.getElementById('btn-logout').onclick = async () => {
-            if(confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
-                await supabase.auth.signOut();
-            }
-        };
-
-        // CHỌN FILE ĐĂNG ẢNH
-        let selectedFile = null;
-        document.getElementById('input-file').onchange = (e) => {
-            if(e.target.files.length > 0) {
-                selectedFile = e.target.files[0];
-                document.getElementById('upload-status').innerText = `Đã chọn: ${selectedFile.name}`;
-            }
-        };
-
-        document.getElementById('btn-upload').onclick = async () => {
-            if(!selectedFile) { alert("Sếp ơi chưa chọn file ảnh nào ạ!"); return; }
-            if(!currentUser) return;
+        // 4. XỬ LÝ ĐĂNG NHẬP KHI ADMIN BẤM NÚT "XÁC THỰC HỆ THỐNG"
+        document.getElementById('btn-admin-submit').onclick = async () => {
+            const emailInput = document.getElementById('admin-email').value.trim();
+            const passwordInput = document.getElementById('admin-password').value.trim();
             
-            const btn = document.getElementById('btn-upload');
-            btn.innerText = "Đang tải ảnh lên...";
-            btn.disabled = true;
-
-            try {
-                const fileName = `${Date.now()}.jpg`;
-                const { error: storageErr } = await supabase.storage.from('nature-images').upload(fileName, selectedFile);
-                if(storageErr) throw storageErr;
-
-                const { data } = supabase.storage.from('nature-images').getPublicUrl(fileName);
-                const authorName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
-
-                await supabase.from('photos').insert([{
-                    url: data.publicUrl,
-                    caption: document.getElementById('input-caption').value.trim() || "Ảnh thiên nhiên bình yên.",
-                    author: authorName
-                }]);
-
-                selectedFile = null;
-                document.getElementById('input-file').value = "";
-                document.getElementById('input-caption').value = "";
-                document.getElementById('upload-status').innerHTML = `<i class="fa-solid fa-image mr-1 text-emerald-600"></i> Chọn ảnh từ máy`;
-                loadPhotos();
-            } catch(err) {
-                alert("Lỗi tải lên: " + err.message);
-            } finally {
-                btn.innerText = "Đăng Lên Bộ Sưu Tập";
-                btn.disabled = false;
-            }
-        };
-
-        // TẢI ALBUM ẢNH CHÍNH
-        async function loadPhotos() {
-            if(!currentUser) return;
-            const { data: photos } = await supabase.from('photos').select('*').order('id', { ascending: false });
-            const gallery = document.getElementById('photo-gallery');
-            if(!photos || photos.length === 0) {
-                gallery.innerHTML = `<p class="text-stone-400 text-center col-span-full py-8 text-xs">Chưa có bức ảnh nào được chia sẻ.</p>`;
+            if(!emailInput || !passwordInput) {
+                alert("Sếp vui lòng nhập đầy đủ cả Email và Mật khẩu quản trị nhé!");
                 return;
             }
 
-            const authorName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
+            const btn = document.getElementById('btn-admin-submit');
+            btn.innerText = "Đang kiểm tra thông tin...";
+            btn.disabled = true;
+
+            try {
+                // Xác thực tài khoản dựa trên dữ liệu sếp tự tay nhập vào
+                const { error } = await clientSupabase.auth.signInWithPassword({ 
+                    email: emailInput, 
+                    password: passwordInput 
+                });
+                if (error) {
+                    alert("Đăng nhập thất bại: " + error.message);
+                } else {
+                    // Xóa trắng ô nhập sau khi thành công
+                    document.getElementById('admin-email').value = "";
+                    document.getElementById('admin-password').value = "";
+                    document.getElementById('admin-form-box').classList.add('hidden');
+                }
+            } catch (err) { 
+                alert("Lỗi hệ thống: " + err.message); 
+            } finally {
+                btn.innerText = "Xác thực hệ thống";
+                btn.disabled = false;
+            }
+        };
+
+        // ĐĂNG XUẤT
+        document.getElementById('btn-logout').onclick = async () => {
+            if(confirm("Sếp có chắc chắn muốn đăng xuất không?")) {
+                await clientSupabase.auth.signOut();
+            }
+        };
+
+        // 5. CHỨC NĂNG TẢI ẢNH LÊN STORAGE VÀ INSERT VÀO DATABASE
+        document.getElementById('btn-upload').onclick = async () => {
+            const fileInput = document.getElementById('input-file');
+            const captionInput = document.getElementById('input-caption');
+            
+            if(fileInput.files.length === 0) { alert("Sếp vui lòng chọn file ảnh trước ạ!"); return; }
+            if(!currentUser) return;
+
+            const file = fileInput.files[0];
+            const btn = document.getElementById('btn-upload');
+            btn.innerText = "Đang tải ảnh lên hệ thống...";
+            btn.disabled = true;
+
+            try {
+                const fileName = `${Date.now()}_${file.name}`;
+                const { error: storageErr } = await clientSupabase.storage.from('nature-images').upload(fileName, file);
+                if(storageErr) throw storageErr;
+
+                const { data } = clientSupabase.storage.from('nature-images').getPublicUrl(fileName);
+                const authorName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
+
+                await clientSupabase.from('photos').insert([{
+                    url: data.publicUrl,
+                    caption: captionInput.value.trim() || "Ảnh thiên nhiên bình yên từ thành viên.",
+                    author: authorName
+                }]);
+
+                fileInput.value = "";
+                captionInput.value = "";
+                alert("Đăng ảnh lên bộ sưu tập thành công!");
+                loadPhotos();
+            } catch(err) {
+                alert("Lỗi không tải được bài lên: " + err.message);
+            } finally {
+                btn.innerText = "Đăng lên bộ sưu tập";
+                btn.disabled = false;
+            }
+        };
+
+        // 6. TẢI TOÀN BỘ ALBUM ẢNH CHÍNH VÀ NÚT XÓA BÀI
+        async function loadPhotos() {
+            if(!currentUser) return;
+            const { data: photos } = await clientSupabase.from('photos').select('*').order('id', { ascending: false });
+            const gallery = document.getElementById('photo-gallery');
+            
+            if(!photos || photos.length === 0) {
+                gallery.innerHTML = `<p style="color:#78716c; text-align:center; font-size: 12px; padding: 30px 0;">Chưa có hình ảnh nào được chia sẻ công khai.</p>`;
+                return;
+            }
+
+            const currentAuthor = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
 
             gallery.innerHTML = photos.map(p => {
-                const isAdmin = (currentUser.email === "tholo.nature@gmail.com" || authorName === "Tho Lo");
-                const deletePhotoBtn = isAdmin ? `<button onclick="deletePhoto(${p.id})" class="text-[10px] text-rose-500 hover:underline"><i class="fa-solid fa-trash"></i> Xóa bài</button>` : '';
+                const isAdmin = (currentUser.email === "tholo.nature@gmail.com" || currentAuthor === "Tho Lo");
+                const deleteBtnHtml = isAdmin ? `<button onclick="deletePhoto(${p.id})" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:11px;"><i class="fa-solid fa-trash"></i> Xóa bài</button>` : '';
 
                 return `
-                    <div class="bg-white p-4 rounded-2xl shadow-xs border border-stone-200 flex flex-col justify-between hover-scale transition duration-300 animate-fade-in">
-                        <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded"><i class="fa-solid fa-user text-[8px]"></i> ${p.author || 'Ẩn danh'}</span>
-                                ${deletePhotoBtn}
-                            </div>
-                            <img src="${p.url}" class="w-full h-48 object-cover rounded-xl mb-2 bg-stone-100">
-                            <p class="text-xs text-stone-700 font-medium px-1 mb-3">${p.caption}</p>
-                            
-                            <div class="bg-stone-50 p-2.5 rounded-xl border border-stone-200 mb-3">
-                                <span class="text-[9px] uppercase font-bold text-stone-400 tracking-wider">Hội thoại bình luận</span>
-                                <div id="comments-tree-${p.id}" class="space-y-2 mt-1 max-h-44 overflow-y-auto pr-1 text-xs"></div>
-                                
-                                <div class="flex gap-1.5 mt-2.5 pt-2 border-t border-stone-200">
-                                    <input type="text" id="root-cmt-input-${p.id}" placeholder="Để lại lời nhắn..." class="flex-1 bg-white border border-stone-200 text-xs px-2 py-1 rounded-lg outline-none focus:border-emerald-500">
-                                    <button onclick="addComment(${p.id}, null)" class="bg-emerald-600 text-white px-2.5 rounded-lg text-xs font-bold">Gửi</button>
-                                </div>
-                            </div>
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:11px; font-weight:bold; color:#059669; background:#ecfdf5; padding: 3px 8px; border-radius:15px;"><i class="fa-solid fa-user"></i> ${p.author || 'Thành viên'}</span>
+                            ${deleteBtnHtml}
+                        </div>
+                        <img src="${p.url}">
+                        <p style="font-size:13px; font-weight:500; margin: 12px 0; color:#1c1917;">${p.caption}</p>
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f5f5f4; padding-top:10px;">
+                            <button onclick="likePhoto(${p.id}, ${p.likes || 0})" style="color:#f43f5e; background:none; border:none; cursor:pointer; font-weight:bold; font-size:12px;">
+                                <i class="fa-solid fa-heart"></i> Yêu thích (<span id="like-count-${p.id}">${p.likes || 0}</span>)
+                            </button>
+                            <button onclick="downloadImage('${p.url}', ${p.id})" style="color:#059669; background:none; border:none; cursor:pointer; font-weight:bold; font-size:12px;">
+                                <i class="fa-solid fa-download"></i> Tải ảnh gốc
+                            </button>
                         </div>
 
-                        <div class="pt-2 border-t border-stone-100 flex justify-between items-center">
-                            <button onclick="likePhoto(${p.id}, ${p.likes || 0})" class="text-rose-500 font-bold text-xs flex items-center gap-1">
-                                <i class="fa-solid fa-heart"></i> <span id="like-count-${p.id}">${p.likes || 0}</span>
-                            </button>
-                            <button onclick="downloadImage('${p.url}', ${p.id})" class="text-emerald-600 font-bold text-xs"><i class="fa-solid fa-download"></i> Tải ảnh gốc</button>
+                        <div class="comment-section">
+                            <span style="font-size:10px; font-weight:bold; color:#a8a29e; text-transform:uppercase;">Hội thoại bình luận</span>
+                            <div id="comments-tree-${p.id}" class="comment-tree"></div>
+                            
+                            <div style="display:flex; gap:6px; margin-top:10px;">
+                                <input type="text" id="root-cmt-${p.id}" placeholder="Để lại cảm nghĩ của bạn..." style="flex:1; padding:5px 8px; font-size:11px; border:1px solid #d6d3d1; border-radius:6px; outline:none;">
+                                <button onclick="addComment(${p.id}, null)" style="background:#059669; color:white; border:none; padding:4px 10px; font-size:11px; font-weight:bold; border-radius:6px; cursor:pointer;">Gửi</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -274,80 +314,30 @@
             photos.forEach(p => fetchCommentsTree(p.id));
         }
 
-        // TẢI VÀ DỰNG CÂY BÌNH LUẬN ĐỆ QUY
+        // 7. TẢI VÀ XỬ LÝ DỰNG CÂY BÌNH LUẬN ĐỆ QUY (TREE COMMENT)
         async function fetchCommentsTree(photoId) {
             if(!currentUser) return;
-            const treeBox = document.getElementById(`comments-tree-${photoId}`);
-            const { data: cmts } = await supabase.from('comments').select('*').eq('photo_id', photoId).order('id', { ascending: true });
+            const treeContainer = document.getElementById(`comments-tree-${photoId}`);
+            const { data: cmts } = await clientSupabase.from('comments').select('*').eq('photo_id', photoId).order('id', { ascending: true });
+            
             if(!cmts || cmts.length === 0) {
-                treeBox.innerHTML = `<p class="text-stone-400 italic text-[10px] py-0.5">Chưa có bình luận nào.</p>`;
+                treeContainer.innerHTML = `<p style="color:#a8a29e; font-style:italic; font-size:11px; margin:5px 0;">Chưa có phản hồi nào.</p>`;
                 return;
             }
 
             const roots = cmts.filter(c => !c.parent_id);
-            const authorName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
-            
-            function buildTreeHtml(comment, level = 0) {
+            const currentAuthor = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
+
+            function generateNodeHtml(comment, level = 0) {
                 const childs = cmts.filter(c => c.parent_id === comment.id);
-                const isOwner = (comment.user_token === currentUser.id || authorName === "Tho Lo" || currentUser.email === "tholo.nature@gmail.com");
-                const deleteBtn = isOwner ? `<button onclick="deleteCmt(${comment.id}, ${photoId})" class="text-[9px] text-stone-400 hover:text-rose-500 ml-2">Xóa</button>` : '';
-                
+                const isOwner = (comment.user_token === currentUser.id || currentAuthor === "Tho Lo" || currentUser.email === "tholo.nature@gmail.com");
+                const deleteCmtBtn = isOwner ? `<button onclick="deleteCmt(${comment.id}, ${photoId})" style="color:#b45309; background:none; border:none; cursor:pointer; font-size:10px; margin-left:8px;">Xóa</button>` : '';
+
                 let html = `
-                    <div class="animate-fade-in mt-1.5" style="margin-left: ${level * 12}px; border-left: ${level > 0 ? '1.5px dashed #d6d3d1' : 'none'}; padding-left: ${level > 0 ? '6px' : '0px'}">
-                        <div class="bg-white p-1.5 px-2 rounded-lg border border-stone-200/80 shadow-3xs">
-                            <div class="flex justify-between items-center">
-                                <span class="font-bold text-emerald-800 text-[10px]">${comment.author}</span>
-                                ${deleteBtn}
+                    <div style="margin-left: ${level * 15}px; border-left: ${level > 0 ? '1.5px dashed #cbd5e1' : 'none'}; padding-left: ${level > 0 ? '8px' : '0px'}">
+                        <div class="comment-node">
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; color:#1e3a8a; font-size:11px;">
+                                <span>${comment.author}</span>
+                                ${deleteCmtBtn}
                             </div>
-                            <p class="text-stone-700 text-[11px] mt-0.5 leading-tight">${comment.text}</p>
-                            <button onclick="toggleReplyInput(${comment.id})" class="text-[9px] text-emerald-600 font-semibold mt-0.5 block hover:underline"><i class="fa-solid fa-reply text-[7px] rotate-180"></i> Trả lời</button>
-                            
-                            <div id="reply-box-${comment.id}" class="hidden flex gap-1 mt-1.5 pt-1.5 border-t border-stone-10/50">
-                                <input type="text" id="reply-input-${comment.id}" placeholder="Phản hồi ${comment.author}..." class="flex-1 bg-stone-50 border text-[10px] px-2 py-0.5 rounded outline-none focus:border-emerald-500">
-                                <button onclick="addComment(${photoId}, ${comment.id})" class="bg-stone-700 text-white text-[9px] px-2 rounded font-bold">Gửi</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                childs.forEach(child => { html += buildTreeHtml(child, level + 1); });
-                return html;
-            }
-
-            treeBox.innerHTML = roots.map(c => buildTreeHtml(c, 0)).join('');
-        }
-
-        window.toggleReplyInput = (id) => {
-            const el = document.getElementById(`reply-box-${id}`);
-            if(el) el.classList.toggle('hidden');
-        };
-
-        window.addComment = async (photoId, parentId) => {
-            if(!currentUser) return;
-            let inputEl = parentId ? document.getElementById(`reply-input-${parentId}`) : document.getElementById(`root-cmt-input-${photoId}`);
-            let text = inputEl.value.trim();
-            if(!text) return;
-
-            const authorName = (currentUser.user_metadata && currentUser.user_metadata.full_name) ? currentUser.user_metadata.full_name : currentUser.email;
-
-            await supabase.from('comments').insert([{
-                photo_id: photoId,
-                parent_id: parentId,
-                author: authorName,
-                text: text,
-                user_token: currentUser.id
-            }]);
-
-            inputEl.value = "";
-            fetchCommentsTree(photoId);
-        };
-
-        window.deleteCmt = async (id, photoId) => {
-            if(confirm("Bạn muốn xóa dòng bình luận này chứ?")) {
-                await supabase.from('comments').delete().eq('id', id);
-                fetchCommentsTree(photoId);
-            }
-        };
-
-        window.likePhoto = async (id, currentLikes) => {
-            const label = document.getElement
+                            <p style="margin:4px
